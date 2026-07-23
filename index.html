@@ -1,227 +1,168 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEFECT Analysis System - نظام تحليل وتصوير العيوب</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
-<link rel="apple-touch-icon" href="icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام تحليل العيوب</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #f4f6f9; margin: 0; padding: 0; }
+    
+    /* 1. شاشة الترحيب */
+    #splash-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #1e40af;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+      margin-top: 20px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    <style>
-        :root {
-            --primary-color: #1e293b;
-            --accent-color: #2563eb;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --border-color: #e2e8f0;
-        }
+    /* 2. الصفحة الرئيسية والقائمة */
+    .app-header { background: #1d4ed8; color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; }
+    .container { padding: 15px; max-width: 500px; margin: auto; }
+    
+    .menu-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+    .menu-icon { font-size: 24px; margin-left: 15px; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+    .menu-title { font-weight: bold; font-size: 1rem; color: #1e293b; }
+    .menu-sub { font-size: 0.8rem; color: #64748b; margin-top: 3px; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            padding: 25px;
-            border: 1px solid var(--border-color);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--bg-color);
-            padding-bottom: 15px;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 1.6rem;
-            margin-bottom: 8px;
-        }
-
-        p.subtitle {
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        input[type="text"], textarea, select, input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            background-color: #fff;
-        }
-
-        input[type="file"] {
-            padding: 8px;
-            cursor: pointer;
-        }
-
-        button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #1d4ed8;
-        }
-
-        .results {
-            margin-top: 30px;
-            display: none;
-        }
-
-        .results.active {
-            display: block;
-        }
-
-        .results h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        .result-item {
-            margin-bottom: 15px;
-            padding: 15px;
-            background-color: #f8fafc;
-            border-radius: 8px;
-            border-right: 4px solid var(--accent-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .result-img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 6px;
-            margin-top: 10px;
-            object-fit: cover;
-            border: 1px solid #cbd5e1;
-        }
-    </style>
+    /* 3. شاشة النموذج (إضافة عيب) */
+    #form-screen { display: none; }
+    .btn-back { background: #e2e8f0; border: none; padding: 8px 15px; border-radius: 6px; margin-bottom: 15px; cursor: pointer; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #334155; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  </style>
 </head>
 <body>
 
+  <!-- 1. شاشة الترحيب (Welcome) -->
+  <div id="splash-screen">
+    <div style="font-size: 50px;">📊</div>
+    <h2>نظام تحليل العيوب</h2>
+    <p>DEFECT Analysis System</p>
+    <div class="loader"></div>
+  </div>
+
+  <!-- 2. الشاشة الرئيسية (القائمة) -->
+  <div id="home-screen">
+    <div class="app-header">Can Defect Analysis</div>
     <div class="container">
-        <header>
-            <h1>نظام تحليل وتصوير العيوب (DEFECT Analysis)</h1>
-            <p class="subtitle">تسجيل وتصوير عيوب خطوط الإنتاج والبيانات</p>
-        </header>
+      
+      <div class="menu-card" onclick="showForm()">
+        <div class="menu-icon" style="background: #2563eb;">📷</div>
+        <div>
+          <div class="menu-title">تصوير عيب جديد</div>
+          <div class="menu-sub">إضافة عيب جديد إلى قاعدة البيانات</div>
+        </div>
+      </div>
 
-        <main>
-            <form id="defectForm">
-                <div class="form-group">
-                    <label for="defectTitle">عنوان العيب / المشكلة:</label>
-                    <input type="text" id="defectTitle" placeholder="مثال: Rim Dent / Flange Distortion..." required>
-                </div>
+      <div class="menu-card">
+        <div class="menu-icon" style="background: #16a34a;">🔍</div>
+        <div>
+          <div class="menu-title">اكتشاف عيب</div>
+          <div class="menu-sub">تصوير العيب وتحليله بالذكاء الاصطناعي</div>
+        </div>
+      </div>
 
-                <div class="form-group">
-                    <label for="defectCategory">تصنيف العيب:</label>
-                    <select id="defectCategory">
-                        <option value="تشوه حافة (Rim Dent / Flange)">تشوه حافة (Rim Dent / Flange)</option>
-                        <option value="عيب برمجي">عيب برمجي (Software Bug)</option>
-                        <option value="مشكلة تصميم">مشكلة تصميم (UI/UX)</option>
-                        <option value="خطأ بيانات">خطأ بيانات (Data Error)</option>
-                    </select>
-                </div>
+      <div class="menu-card">
+        <div class="menu-icon" style="background: #ea580c;">📚</div>
+        <div>
+          <div class="menu-title">قاعدة المعرفة</div>
+          <div class="menu-sub">عرض جميع العيوب والحلول</div>
+        </div>
+      </div>
 
-                <div class="form-group">
-                    <label for="defectImage">صورة العيب (صوّر بالكاميرا أو اختر صورة):</label>
-                    <input type="file" id="defectImage" accept="image/*" capture="environment">
-                </div>
+      <div class="menu-card">
+        <div class="menu-icon" style="background: #9333ea;">📊</div>
+        <div>
+          <div class="menu-title">الإحصائيات</div>
+          <div class="menu-sub">إحصائيات خطوط الإنتاج والعيوب</div>
+        </div>
+      </div>
 
-                <div class="form-group">
-                    <label for="defectDesc">التفاصيل والوصف:</label>
-                    <textarea id="defectDesc" rows="3" placeholder="اكتب تفاصيل إضافية حول العيب أو موقع الكاميرا/المكينة..." required></textarea>
-                </div>
-
-                <button type="submit">إضافة وتحليل العيب</button>
-            </form>
-
-            <section class="results" id="resultsSection">
-                <h2>سجل العيوب والملاحظات المصوّرة:</h2>
-                <div id="resultsList"></div>
-            </section>
-        </main>
     </div>
+  </div>
 
-    <script>
-        const form = document.getElementById('defectForm');
-        const resultsSection = document.getElementById('resultsSection');
-        const resultsList = document.getElementById('resultsList');
+  <!-- 3. شاشة نموذج إدخال العيب -->
+  <div id="form-screen">
+    <div class="app-header">إضافة تحليل العيب</div>
+    <div class="container">
+      <button class="btn-back" onclick="showHome()">⬅ رجوع للقائمة</button>
+      
+      <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div class="form-group">
+          <label>عنوان العيب / المشكلة:</label>
+          <input type="text" placeholder="مثال: Rim Dent / Flange Distortion">
+        </div>
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        <div class="form-group">
+          <label>تصنيف العيب:</label>
+          <select>
+            <option>تشوه حافة (Rim Dent / Flange)</option>
+            <option>خدش في الدهان (Scratch)</option>
+            <option>تسريب (Leakage)</option>
+          </select>
+        </div>
 
-            const title = document.getElementById('defectTitle').value;
-            const category = document.getElementById('defectCategory').value;
-            const desc = document.getElementById('defectDesc').value;
-            const imageInput = document.getElementById('defectImage');
-            
-            let imgHTML = '';
-            
-            if (imageInput.files && imageInput.files[0]) {
-                const imgURL = URL.createObjectURL(imageInput.files[0]);
-                imgHTML = `<br><img src="${imgURL}" class="result-img" alt="صورة العيب">`;
-            }
+        <div class="form-group">
+          <label>صورة العيب:</label>
+          <input type="file" accept="image/*">
+        </div>
 
-            const resultCard = document.createElement('div');
-            resultCard.className = 'result-item';
-            resultCard.innerHTML = `
-                <strong>[${category}] ${title}</strong>
-                <p style="margin-top: 5px; color: #334155;">${desc}</p>
-                ${imgHTML}
-                <div style="margin-top: 10px;">
-                    <small style="color: #94a3b8;">تاريخ التسجيل: ${new Date().toLocaleTimeString('ar-EG')}</small>
-                </div>
-            `;
+        <div class="form-group">
+          <label>التفاصيل والوصف:</label>
+          <textarea rows="3" placeholder="اكتب تفاصيل إضافية..."></textarea>
+        </div>
 
-            resultsList.prepend(resultCard);
-            resultsSection.classList.add('active');
+        <button class="btn-submit" onclick="alert('تم حفظ البيانات بنجاح!')">إضافة وتحليل العيب</button>
+      </div>
+    </div>
+  </div>
 
-            form.reset();
-        });
-    </script>
+  <script>
+    // إخفاء شاشة الترحيب بعد ثانيتين
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      splash.style.opacity = '0';
+      setTimeout(() => splash.style.display = 'none', 500);
+    }, 2000);
+
+    // التنقل بين الشاشات
+    function showForm() {
+      document.getElementById('home-screen').style.display = 'none';
+      document.getElementById('form-screen').style.display = 'block';
+    }
+
+    function showHome() {
+      document.getElementById('form-screen').style.display = 'none';
+      document.getElementById('home-screen').style.display = 'block';
+    }
+  </script>
 </body>
 </html>
-  
