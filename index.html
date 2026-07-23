@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEFECT Analysis System - نظام تحليل العيوب</title>
+    <title>DEFECT Analysis System - نظام تحليل وتصوير العيوب</title>
     <style>
         :root {
             --primary-color: #1e293b;
@@ -37,30 +37,30 @@
             background-color: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            padding: 30px;
+            padding: 25px;
             border: 1px solid var(--border-color);
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             border-bottom: 2px solid var(--bg-color);
             padding-bottom: 15px;
         }
 
         h1 {
             color: var(--primary-color);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-bottom: 8px;
         }
 
         p.subtitle {
             color: #64748b;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
@@ -70,31 +70,32 @@
             color: var(--primary-color);
         }
 
-        input[type="text"], textarea, select {
+        input[type="text"], textarea, select, input[type="file"] {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            background-color: #fff;
         }
 
-        input[type="text"]:focus, textarea:focus, select:focus {
-            border-color: var(--accent-color);
+        input[type="file"] {
+            padding: 8px;
+            cursor: pointer;
         }
 
         button {
             background-color: var(--accent-color);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: background-color 0.2s;
+            margin-top: 10px;
         }
 
         button:hover {
@@ -104,9 +105,6 @@
         .results {
             margin-top: 30px;
             display: none;
-            background-color: #f1f5f9;
-            border-radius: 8px;
-            padding: 20px;
         }
 
         .results.active {
@@ -114,17 +112,27 @@
         }
 
         .results h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             margin-bottom: 15px;
             color: var(--primary-color);
         }
 
         .result-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: white;
-            border-radius: 6px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
             border-right: 4px solid var(--accent-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .result-img {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 6px;
+            margin-top: 10px;
+            object-fit: cover;
+            border: 1px solid #cbd5e1;
         }
     </style>
 </head>
@@ -132,37 +140,42 @@
 
     <div class="container">
         <header>
-            <h1>نظام تحليل العيوب (DEFECT Analysis)</h1>
-            <p class="subtitle">لوحة تسجيل ومتابعة وتحليل عيوب البيانات والمشروع</p>
+            <h1>نظام تحليل وتصوير العيوب (DEFECT Analysis)</h1>
+            <p class="subtitle">تسجيل وتصوير عيوب خطوط الإنتاج والبيانات</p>
         </header>
 
         <main>
             <form id="defectForm">
                 <div class="form-group">
                     <label for="defectTitle">عنوان العيب / المشكلة:</label>
-                    <input type="text" id="defectTitle" placeholder="أدخل وصفاً قصيراً للعيوب..." required>
+                    <input type="text" id="defectTitle" placeholder="مثال: Rim Dent / Flange Distortion..." required>
                 </div>
 
                 <div class="form-group">
                     <label for="defectCategory">تصنيف العيب:</label>
                     <select id="defectCategory">
-                        <option value="برمجي">عيب برمجي (Software Bug)</option>
-                        <option value="تصميم">مشكلة تصميم (UI/UX)</option>
-                        <option value="بيانات">خطأ في البيانات (Data Error)</option>
-                        <option value="أداء">أداء بطيء (Performance)</option>
+                        <option value="تشوه حافة (Rim Dent / Flange)">تشوه حافة (Rim Dent / Flange)</option>
+                        <option value="عيب برمجي">عيب برمجي (Software Bug)</option>
+                        <option value="مشكلة تصميم">مشكلة تصميم (UI/UX)</option>
+                        <option value="خطأ بيانات">خطأ بيانات (Data Error)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="defectDesc">التفاصيل والأسباب المتوقعة:</label>
-                    <textarea id="defectDesc" rows="4" placeholder="اكتب تفاصيل إضافية حول العيب..." required></textarea>
+                    <label for="defectImage">صورة العيب (صوّر بالكاميرا أو اختر صورة):</label>
+                    <input type="file" id="defectImage" accept="image/*" capture="environment">
+                </div>
+
+                <div class="form-group">
+                    <label for="defectDesc">التفاصيل والوصف:</label>
+                    <textarea id="defectDesc" rows="3" placeholder="اكتب تفاصيل إضافية حول العيب أو موقع الكاميرا/المكينة..." required></textarea>
                 </div>
 
                 <button type="submit">إضافة وتحليل العيب</button>
             </form>
 
             <section class="results" id="resultsSection">
-                <h2>نتائج التحليل والتقارير:</h2>
+                <h2>سجل العيوب والملاحظات المصوّرة:</h2>
                 <div id="resultsList"></div>
             </section>
         </main>
@@ -179,13 +192,24 @@
             const title = document.getElementById('defectTitle').value;
             const category = document.getElementById('defectCategory').value;
             const desc = document.getElementById('defectDesc').value;
+            const imageInput = document.getElementById('defectImage');
+            
+            let imgHTML = '';
+            
+            if (imageInput.files && imageInput.files[0]) {
+                const imgURL = URL.createObjectURL(imageInput.files[0]);
+                imgHTML = `<br><img src="${imgURL}" class="result-img" alt="صورة العيب">`;
+            }
 
             const resultCard = document.createElement('div');
             resultCard.className = 'result-item';
             resultCard.innerHTML = `
                 <strong>[${category}] ${title}</strong>
-                <p style="margin-top: 5px; color: #475569;">${desc}</p>
-                <small style="color: #94a3b8;">تاريخ التسجيل: ${new Date().toLocaleTimeString('ar-EG')}</small>
+                <p style="margin-top: 5px; color: #334155;">${desc}</p>
+                ${imgHTML}
+                <div style="margin-top: 10px;">
+                    <small style="color: #94a3b8;">تاريخ التسجيل: ${new Date().toLocaleTimeString('ar-EG')}</small>
+                </div>
             `;
 
             resultsList.prepend(resultCard);
