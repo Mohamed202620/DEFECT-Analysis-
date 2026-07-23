@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-tag">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,151 +9,191 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: #f4f6f9; margin: 0; padding: 0; }
     
-    /* 1. شاشة الترحيب */
+    /* شاشة الترحيب */
     #splash-screen {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-color: #1e40af;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      transition: opacity 0.5s ease;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #1e40af; color: white;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 1000; transition: opacity 0.5s ease;
     }
     .loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3b82f6;
-      border-radius: 50%;
-      width: 40px; height: 40px;
-      animation: spin 1s linear infinite;
-      margin-top: 20px;
+      border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6;
+      border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 1s linear infinite; margin-top: 20px;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* 2. الصفحة الرئيسية والقائمة */
-    .app-header { background: #1d4ed8; color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; }
-    .container { padding: 15px; max-width: 500px; margin: auto; }
-    
-    .menu-card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      cursor: pointer;
+    /* الهيدر وزر اللغة */
+    .app-header { 
+      background: #2563eb; color: white; padding: 15px; 
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .menu-icon { font-size: 24px; margin-left: 15px; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
-    .menu-title { font-weight: bold; font-size: 1rem; color: #1e293b; }
-    .menu-sub { font-size: 0.8rem; color: #64748b; margin-top: 3px; }
+    .lang-btn {
+      background: rgba(255,255,255,0.2); color: white; border: 1px solid white;
+      padding: 5px 12px; border-radius: 20px; cursor: pointer; font-weight: bold;
+    }
 
-    /* 3. شاشة النموذج (إضافة عيب) */
+    .container { padding: 16px; max-width: 480px; margin: auto; }
+    
+    /* الكروت والقائمة */
+    .menu-card {
+      background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+      display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
+    }
+    .menu-icon { 
+      font-size: 22px; margin-inline-end: 15px; width: 48px; height: 48px; 
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
+    }
+    .menu-title { font-weight: bold; font-size: 1.05rem; color: #1e293b; }
+    .menu-sub { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+
     #form-screen { display: none; }
-    .btn-back { background: #e2e8f0; border: none; padding: 8px 15px; border-radius: 6px; margin-bottom: 15px; cursor: pointer; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-weight: bold; margin-bottom: 5px; color: #334155; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-    .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-back { 
+      background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 8px; 
+      margin-bottom: 15px; cursor: pointer; font-weight: bold; color: #334155;
+    }
+
+    .form-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+    
+    input[type="text"], select, textarea { 
+      width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background-color: #fff;
+    }
+
+    /* أزرار أخذ الصور */
+    .photo-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn-photo {
+      flex: 1; padding: 10px; border: 1px solid #2563eb; background: #eff6ff;
+      color: #2563eb; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;
+    }
+    #image-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
+
+    .btn-submit { 
+      width: 100%; background: #2563eb; color: white; border: none; padding: 14px; 
+      border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 1. شاشة الترحيب (Welcome) -->
+  <!-- شاشة الترحيب -->
   <div id="splash-screen">
-    <div style="font-size: 50px;">📊</div>
-    <h2>نظام تحليل العيوب</h2>
+    <div style="font-size: 56px;">📊</div>
+    <h2 id="splash-title">نظام تحليل العيوب</h2>
     <p>DEFECT Analysis System</p>
     <div class="loader"></div>
   </div>
 
-  <!-- 2. الشاشة الرئيسية (القائمة) -->
+  <!-- القائمة الرئيسية -->
   <div id="home-screen">
-    <div class="app-header">Can Defect Analysis</div>
+    <div class="app-header">
+      <span id="app-title-1">تحليل العيوب</span>
+      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
+    </div>
     <div class="container">
       
       <div class="menu-card" onclick="showForm()">
         <div class="menu-icon" style="background: #2563eb;">📷</div>
         <div>
-          <div class="menu-title">تصوير عيب جديد</div>
-          <div class="menu-sub">إضافة عيب جديد إلى قاعدة البيانات</div>
+          <div class="menu-title" id="m1-title">تصوير عيب جديد</div>
+          <div class="menu-sub" id="m1-sub">إضافة عيب جديد إلى قاعدة البيانات</div>
         </div>
       </div>
 
       <div class="menu-card">
         <div class="menu-icon" style="background: #16a34a;">🔍</div>
         <div>
-          <div class="menu-title">اكتشاف عيب</div>
-          <div class="menu-sub">تصوير العيب وتحليله بالذكاء الاصطناعي</div>
+          <div class="menu-title" id="m2-title">اكتشاف عيب</div>
+          <div class="menu-sub" id="m2-sub">تصوير العيب وتحليله بالذكاء الاصطناعي</div>
         </div>
       </div>
 
       <div class="menu-card">
         <div class="menu-icon" style="background: #ea580c;">📚</div>
         <div>
-          <div class="menu-title">قاعدة المعرفة</div>
-          <div class="menu-sub">عرض جميع العيوب والحلول</div>
+          <div class="menu-title" id="m3-title">قاعدة المعرفة</div>
+          <div class="menu-sub" id="m3-sub">عرض جميع العيوب والحلول</div>
         </div>
       </div>
 
       <div class="menu-card">
         <div class="menu-icon" style="background: #9333ea;">📊</div>
         <div>
-          <div class="menu-title">الإحصائيات</div>
-          <div class="menu-sub">إحصائيات خطوط الإنتاج والعيوب</div>
+          <div class="menu-title" id="m4-title">الإحصائيات</div>
+          <div class="menu-sub" id="m4-sub">إحصائيات خطوط الإنتاج والعيوب</div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- 3. شاشة نموذج إدخال العيب -->
+  <!-- شاشة إضافة عيب -->
   <div id="form-screen">
-    <div class="app-header">إضافة تحليل العيب</div>
+    <div class="app-header">
+      <span id="app-title-2">إضافة تحليل العيب</span>
+      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
+    </div>
     <div class="container">
-      <button class="btn-back" onclick="showHome()">⬅ رجوع للقائمة</button>
       
-      <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      <button class="btn-back" onclick="showHome()" id="btn-back">➔ رجوع للقائمة</button>
+      
+      <div class="form-card">
         <div class="form-group">
-          <label>عنوان العيب / المشكلة:</label>
-          <input type="text" placeholder="مثال: Rim Dent / Flange Distortion">
+          <label id="lbl-title">عنوان العيب / المشكلة:</label>
+          <input type="text" id="defect-title" placeholder="Rim Dent / Flange Distortion">
         </div>
 
         <div class="form-group">
-          <label>تصنيف العيب:</label>
-          <select>
-            <option>تشوه حافة (Rim Dent / Flange)</option>
-            <option>خدش في الدهان (Scratch)</option>
-            <option>تسريب (Leakage)</option>
+          <label id="lbl-category">تصنيف العيب:</label>
+          <select id="defect-category">
+            <option value="1" id="opt-1">تشوه حافة (Rim Dent / Flange)</option>
+            <option value="2" id="opt-2">خدش في الدهان (Scratch)</option>
+            <option value="3" id="opt-3">تسريب (Leakage)</option>
+            <option value="4" id="opt-4">أخرى (Other)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>صورة العيب:</label>
-          <input type="file" accept="image/*">
+          <label id="lbl-photo">صورة العيب:</label>
+          <div class="photo-buttons">
+            <!-- فتح الكاميرا مباشرة -->
+            <label class="btn-photo">
+              📷 <span id="btn-cam">الكاميرا</span>
+              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)">
+            </label>
+            <!-- فتح الاستوديو / الاستعراض -->
+            <label class="btn-photo">
+              🖼️ <span id="btn-gallery">المعرض</span>
+              <input type="file" accept="image/*" style="display:none" onchange="handleImage(this)">
+            </label>
+          </div>
+          <img id="image-preview" alt="معاينة الصورة">
         </div>
 
         <div class="form-group">
-          <label>التفاصيل والوصف:</label>
-          <textarea rows="3" placeholder="اكتب تفاصيل إضافية..."></textarea>
+          <label id="lbl-desc">التفاصيل والوصف:</label>
+          <textarea id="defect-desc" rows="3"></textarea>
         </div>
 
-        <button class="btn-submit" onclick="alert('تم حفظ البيانات بنجاح!')">إضافة وتحليل العيب</button>
+        <button class="btn-submit" id="btn-save" onclick="saveDefect()">حفظ وتحليل العيب</button>
       </div>
+
     </div>
   </div>
 
   <script>
-    // إخفاء شاشة الترحيب بعد ثانيتين
+    let currentLang = 'ar';
+    let base64Image = "";
+
+    // إخفاء شاشة الترحيب
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       splash.style.opacity = '0';
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 2000);
+    }, 1800);
 
-    // التنقل بين الشاشات
     function showForm() {
       document.getElementById('home-screen').style.display = 'none';
       document.getElementById('form-screen').style.display = 'block';
@@ -162,6 +202,113 @@
     function showHome() {
       document.getElementById('form-screen').style.display = 'none';
       document.getElementById('home-screen').style.display = 'block';
+    }
+
+    // المعالجة وحفظ الصورة مؤقتاً ومعاينتها
+    function handleImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          base64Image = e.target.result;
+          const img = document.getElementById('image-preview');
+          img.src = base64Image;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    // حفظ العيب في ذاكرة الهاتف LocalStorage
+    function saveDefect() {
+      const title = document.getElementById('defect-title').value;
+      const category = document.getElementById('defect-category').value;
+      const desc = document.getElementById('defect-desc').value;
+
+      if (!title) {
+        alert(currentLang === 'ar' ? 'الرجاء كتابة عنوان العيب!' : 'Please enter defect title!');
+        return;
+      }
+
+      const newDefect = {
+        id: Date.now(),
+        title: title,
+        category: category,
+        desc: desc,
+        image: base64Image
+      };
+
+      let defects = JSON.parse(localStorage.getItem('defects') || '[]');
+      defects.push(newDefect);
+      localStorage.setItem('defects', JSON.stringify(defects));
+
+      alert(currentLang === 'ar' ? 'تم حفظ العيب بنجاح في الذاكرة!' : 'Defect saved successfully!');
+      
+      // تفريغ الحقول
+      document.getElementById('defect-title').value = '';
+      document.getElementById('defect-desc').value = '';
+      document.getElementById('image-preview').style.display = 'none';
+      base64Image = "";
+      showHome();
+    }
+
+    // ترجمة الواجهة عربي / إنجليزي
+    const translations = {
+      ar: {
+        dir: 'rtl', langBtn: 'EN',
+        appTitle1: 'تحليل العيوب', appTitle2: 'إضافة تحليل العيب', splashTitle: 'نظام تحليل العيوب',
+        m1Title: 'تصوير عيب جديد', m1Sub: 'إضافة عيب جديد إلى قاعدة البيانات',
+        m2Title: 'اكتشاف عيب', m2Sub: 'تصوير العيب وتحليله بالذكاء الاصطناعي',
+        m3Title: 'قاعدة المعرفة', m3Sub: 'عرض جميع العيوب والحلول',
+        m4Title: 'الإحصائيات', m4Sub: 'إحصائيات خطوط الإنتاج والعيوب',
+        btnBack: '➔ رجوع للقائمة', lblTitle: 'عنوان العيب / المشكلة:',
+        lblCategory: 'تصنيف العيب:', opt1: 'تشوه حافة (Rim Dent / Flange)',
+        opt2: 'خدش في الدهان (Scratch)', opt3: 'تسريب (Leakage)', opt4: 'أخرى (Other)',
+        lblPhoto: 'صورة العيب:', btnCam: 'الكاميرا', btnGallery: 'المعرض',
+        lblDesc: 'التفاصيل والوصف:', btnSave: 'حفظ وتحليل العيب'
+      },
+      en: {
+        dir: 'ltr', langBtn: 'عربي',
+        appTitle1: 'Defect Analysis', appTitle2: 'Add Defect Analysis', splashTitle: 'DEFECT Analysis System',
+        m1Title: 'Capture New Defect', m1Sub: 'Add new defect to database',
+        m2Title: 'Detect Defect', m2Sub: 'Analyze defect using AI',
+        m3Title: 'Knowledge Base', m3Sub: 'View all defects and solutions',
+        m4Title: 'Statistics', m4Sub: 'Production line & defect stats',
+        btnBack: '➔ Back to Menu', lblTitle: 'Defect / Issue Title:',
+        lblCategory: 'Defect Category:', opt1: 'Rim Dent / Flange',
+        opt2: 'Paint Scratch', opt3: 'Leakage', opt4: 'Other',
+        lblPhoto: 'Defect Image:', btnCam: 'Camera', btnGallery: 'Gallery',
+        lblDesc: 'Details & Description:', btnSave: 'Save Defect Analysis'
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'ar' ? 'en' : 'ar';
+      const t = translations[currentLang];
+      
+      document.getElementById('html-tag').dir = t.dir;
+      document.querySelectorAll('.lang-btn').forEach(b => b.innerText = t.langBtn);
+      
+      document.getElementById('app-title-1').innerText = t.appTitle1;
+      document.getElementById('app-title-2').innerText = t.appTitle2;
+      document.getElementById('splash-title').innerText = t.splashTitle;
+
+      document.getElementById('m1-title').innerText = t.m1Title; document.getElementById('m1-sub').innerText = t.m1Sub;
+      document.getElementById('m2-title').innerText = t.m2Title; document.getElementById('m2-sub').innerText = t.m2Sub;
+      document.getElementById('m3-title').innerText = t.m3Title; document.getElementById('m3-sub').innerText = t.m3Sub;
+      document.getElementById('m4-title').innerText = t.m4Title; document.getElementById('m4-sub').innerText = t.m4Sub;
+
+      document.getElementById('btn-back').innerText = t.btnBack;
+      document.getElementById('lbl-title').innerText = t.lblTitle;
+      document.getElementById('lbl-category').innerText = t.lblCategory;
+      document.getElementById('opt-1').innerText = t.opt1;
+      document.getElementById('opt-2').innerText = t.opt2;
+      document.getElementById('opt-3').innerText = t.opt3;
+      document.getElementById('opt-4').innerText = t.opt4;
+      document.getElementById('lbl-photo').innerText = t.lblPhoto;
+      document.getElementById('btn-cam').innerText = t.btnCam;
+      document.getElementById('btn-gallery').innerText = t.btnGallery;
+      document.getElementById('lbl-desc').innerText = t.lblDesc;
+      document.getElementById('btn-save').innerText = t.btnSave;
     }
   </script>
 </body>
