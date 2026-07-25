@@ -92,19 +92,24 @@
     <div class="pt-6"></div>
 
     <!-- الصورة الأساسية (فل فريم واضحة وبدون تكرار) -->
-    <div class="flex-1 flex items-center justify-center w-full max-w-sm">
-      <img src="1000230635.png" alt="CAN DEFECT ANALYSIS" class="w-full max-h-[60vh] object-contain rounded-3xl shadow-2xl animate-pulse"/>
-    </div>
-    
-    <!-- العناصر السفلية (رقم الاصدار ومؤشر التحميل فقط) -->
-    <div class="flex flex-col items-center gap-4 mb-6">
-      <div class="px-4 py-1 bg-blue-600/30 rounded-full text-xs text-white border border-blue-500/30 font-semibold tracking-wide">
-        v1.0 - 2026
-      </div>
-      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-
+    <!-- 1️⃣ صفحة الغلاف (Splash Screen) الشاشة الكاملة -->
+<div id="splash" class="fixed inset-0 w-full h-full bg-[#0E1117] flex flex-col items-center justify-center z-50 transition-opacity duration-700">
+  
+  <!-- كارت الصورة الرئيسي بالكامل -->
+  <div class="flex-1 flex items-center justify-center p-4 w-full max-w-sm">
+    <img src="1000230635.png" alt="Splash Icon" class="w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl animate-pulse"/>
   </div>
+  
+  <!-- العناصر السفلية (الإصدار والدائرة المتحركة) -->
+  <div class="pb-10 flex flex-col items-center gap-5">
+    <div class="px-5 py-1.5 bg-[#1E293B] rounded-full text-xs text-blue-400 border border-gray-700/60 font-semibold shadow-inner">
+      v1.0 - 2026
+    </div>
+    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+
+</div>
+
 
 
   <!-- حاوية التطبيق SPA -->
