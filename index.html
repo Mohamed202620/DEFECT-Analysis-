@@ -3,670 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام الجودة والصيانة</title>
-  <link rel="manifest" href="manifest.json">
+  <title>Maintenance & Defect System v1.0</title>
   
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+  <!-- Chart.js للرسم البياني -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: #f4f6f9; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-    
+    :root {
+      --primary: #1E40AF;
+      --accent: #EA580C;
+      --gray-text: #4B5563;
+      --bg-main: #f4f6f9;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-color: #1e293b;
+    }
+
+    body.dark-mode {
+      --primary: #3b82f6;
+      --accent: #f97316;
+      --gray-text: #9ca3af;
+      --bg-main: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-color: #f8fafc;
+    }
+
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.3s, color 0.3s; }
+    body { background-color: var(--bg-main); color: var(--text-color); margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* 1. صفحة الغلاف Splash Screen */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: #1e40af; color: white;
+      background: linear-gradient(135deg, #1E40AF 0%, #1e3a8a 100%); color: white;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 1000; transition: opacity 0.5s ease;
+      z-index: 1000; transition: opacity 0.5s ease; text-align: center; padding: 20px;
     }
-    .loader {
-      border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6;
-      border-radius: 50%; width: 40px; height: 40px;
-      animation: spin 1s linear infinite; margin-top: 20px;
-    }
+    .splash-gear { font-size: 70px; animation: spin 8s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* الهيدر */
     .app-header { 
-      background: #2563eb; color: white; padding: 15px; 
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 12px 16px; 
+      display: flex; justify-content: space-between; align-items: center; sticky: top; top: 0; z-index: 100;
     }
-    .lang-btn {
-      background: rgba(255,255,255,0.2); color: white; border: 1px solid white;
-      padding: 5px 12px; border-radius: 20px; cursor: pointer; font-weight: bold;
+    .user-info { font-size: 0.85rem; font-weight: bold; }
+    .header-controls { display: flex; gap: 8px; align-items: center; }
+    .btn-icon {
+      background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-color);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
     }
 
-    .container { padding: 16px; max-width: 480px; margin: auto; flex: 1; width: 100%; }
+    .container { padding: 16px; max-width: 500px; margin: auto; flex: 1; width: 100%; }
+
+    /* Dashboard */
+    .dashboard-card {
+      background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 20px;
+      border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .stats-grid { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px; }
+    .stat-badge {
+      flex: 1; background: var(--bg-main); padding: 10px 6px; border-radius: 10px; text-align: center;
+      border: 1px solid var(--border-color);
+    }
+    .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--accent); }
+    .stat-lbl { font-size: 0.7rem; color: var(--gray-text); margin-top: 2px; }
+
+    /* الأقسام */
+    .section-title {
+      font-size: 1rem; font-weight: bold; color: var(--primary);
+      margin: 20px 0 10px 0; display: flex; align-items: center; gap: 8px;
+    }
+    .grid-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
     
-    /* عنوان القسم الرئيسي */
-    .section-divider {
-      font-size: 1.1rem; font-weight: bold; color: #1e3a8a;
-      margin: 15px 0 10px 0; padding-bottom: 5px;
-      border-bottom: 2px solid #cbd5e1; display: flex; align-items: center; gap: 8px;
+    .btn-action {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 14px 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+    .btn-action:active { transform: scale(0.97); }
+    .btn-action .icon { font-size: 22px; }
+    .btn-action .text { font-size: 0.85rem; font-weight: bold; color: var(--text-color); }
 
-    .menu-card {
-      background: white; border-radius: 14px; padding: 14px; margin-bottom: 10px;
-      display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer;
-      transition: transform 0.1s ease; border: 1px solid #f1f5f9;
-    }
-    .menu-card:active { transform: scale(0.98); }
-    .menu-icon { 
-      font-size: 20px; margin-inline-end: 12px; width: 44px; height: 44px; 
-      border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
-    }
-    .menu-title { font-weight: bold; font-size: 1rem; color: #1e293b; }
-    .menu-sub { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    .btn-back { 
-      background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 8px; 
-      margin-bottom: 15px; cursor: pointer; font-weight: bold; color: #334155;
-    }
-
-    .form-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-weight: bold; margin-bottom: 6px; color: #1e293b; font-size: 0.9rem; }
-    
-    input[type="text"], input[type="tel"], input[type="date"], select, textarea { 
-      width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background-color: #fff;
-    }
-
-    .photo-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
-    .btn-photo {
-      flex: 1; padding: 10px; border: 1px solid #2563eb; background: #eff6ff;
-      color: #2563eb; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.85rem;
-    }
-    #image-preview, #maint-image-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
-
-    .btn-submit { 
-      width: 100%; background: #2563eb; color: white; border: none; padding: 12px; 
-      border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 10px;
-    }
-    .btn-whatsapp { background: #25D366 !important; margin-top: 10px; }
-
-    /* كروت القوائم والسجلات */
-    .defect-item, .maint-item {
-      background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center;
-    }
-    .defect-item img, .maint-item img { width: 65px; height: 65px; border-radius: 8px; object-fit: cover; background: #e2e8f0; }
-
-    .stat-box {
-      background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: center;
-    }
-    .stat-number { font-size: 2rem; font-weight: bold; color: #2563eb; }
-
+    /* الفوتر */
     footer {
-      text-align: center; padding: 15px 10px; margin-top: auto;
-      border-top: 1px solid #e2e8f0; background-color: #ffffff;
-      font-size: 12px; color: #64748b;
+      text-align: center; padding: 16px; margin-top: auto;
+      border-top: 1px solid var(--border-color); background: var(--card-bg);
+      font-size: 12px; color: var(--gray-text);
     }
+    .logout-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: bold; margin-top: 6px; }
   </style>
 </head>
 <body>
 
-  <!-- شاشة التحميل -->
+  <!-- [صفحة 1] الغلاف (Splash Screen) -->
   <div id="splash-screen">
-    <div style="font-size: 56px;">⚙️</div>
-    <h2 id="splash-title">نظام الجودة والصيانة</h2>
-    <p>Quality & Maintenance System</p>
-    <div class="loader"></div>
-  </div>
-
-  <!-- الشاشة الرئيسية المقسمة لـ 2 قسم رئيسي -->
-  <div id="home-screen" class="screen active">
-    <div class="app-header">
-      <span id="app-title-1">الرئيسية</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-
-      <!-- ================= 1. قسم الصيانة ================= -->
-      <div class="section-divider" id="sec-maint-title">
-        🛠️ قسم الصيانة والمهام
-      </div>
-
-      <!-- 1.1 تسجيل بلاغ صيانة جديد -->
-      <div class="menu-card" onclick="openScreen('maint-screen')">
-        <div class="menu-icon" style="background: #0284c7;">🚨</div>
-        <div>
-          <div class="menu-title" id="m-maint1-title">تسجيل بلاغ عطل / مهمة</div>
-          <div class="menu-sub" id="m-maint1-sub">إرسال بلاغ صيانة مباشر وإخطار المهندس</div>
-        </div>
-      </div>
-
-      <!-- 1.2 سجل بلاغات الصيانة -->
-      <div class="menu-card" onclick="loadMaintenanceLog()">
-        <div class="menu-icon" style="background: #0d9488;">📋</div>
-        <div>
-          <div class="menu-title" id="m-maint2-title">سجل بلاغات الصيانة</div>
-          <div class="menu-sub" id="m-maint2-sub">عرض ومتابعة كافة بلاغات الصيانة السابقة</div>
-        </div>
-      </div>
-
-      <!-- 1.3 الصيانة الوقائية والخطة -->
-      <div class="menu-card" onclick="openPreventiveMaint()">
-        <div class="menu-icon" style="background: #4f46e5;">🗓️</div>
-        <div>
-          <div class="menu-title" id="m-maint3-title">الصيانة الوقائية والجدولة</div>
-          <div class="menu-sub" id="m-maint3-sub">جدول الفحص الدوري للمعدات والخطوط</div>
-        </div>
-      </div>
-
-
-      <!-- ================= 2. قسم تحليل عيوب العلب ================= -->
-      <div class="section-divider" style="margin-top:25px;" id="sec-defects-title">
-        📦 قسم تحليل عيوب العلب
-      </div>
-
-      <!-- 2.1 تصوير عيب جديد -->
-      <div class="menu-card" onclick="openScreen('form-screen')">
-        <div class="menu-icon" style="background: #2563eb;">📷</div>
-        <div>
-          <div class="menu-title" id="m1-title">تصوير عيب جديد</div>
-          <div class="menu-sub" id="m1-sub">إضافة عيب جديد إلى قاعدة البيانات</div>
-        </div>
-      </div>
-
-      <!-- 2.2 اكتشاف عيب بالذكاء الاصطناعي -->
-      <div class="menu-card" onclick="openScreen('detect-screen')">
-        <div class="menu-icon" style="background: #16a34a;">🔍</div>
-        <div>
-          <div class="menu-title" id="m2-title">اكتشاف عيب بالذكاء الاصطناعي</div>
-          <div class="menu-sub" id="m2-sub">تصوير العيب وتحليله فوراً بواسطة AI</div>
-        </div>
-      </div>
-
-      <!-- 2.3 قاعدة معرفة العيوب -->
-      <div class="menu-card" onclick="loadKnowledgeBase()">
-        <div class="menu-icon" style="background: #ea580c;">📚</div>
-        <div>
-          <div class="menu-title" id="m3-title">قاعدة معرفة العيوب</div>
-          <div class="menu-sub" id="m3-sub">عرض كافة عيوب العلب المسجلة والحلول</div>
-        </div>
-      </div>
-
-      <!-- 2.4 إحصائيات العيوب -->
-      <div class="menu-card" onclick="loadStats()">
-        <div class="menu-icon" style="background: #9333ea;">📊</div>
-        <div>
-          <div class="menu-title" id="m4-title">إحصائيات العيوب</div>
-          <div class="menu-sub" id="m4-sub">إحصائيات خطوط الإنتاج ونسب العيوب</div>
-        </div>
-      </div>
-
-      <!-- 2.5 اقتراحات وتواصل -->
-      <div class="menu-card" onclick="openSuggestions()">
-        <div class="menu-icon" style="background: #eab308;">💡</div>
-        <div>
-          <div class="menu-title" id="m5-title">إرسال اقتراح أو ملاحظة</div>
-          <div class="menu-sub" id="m5-sub">تواصل مباشر مع المطور (Mohamed Hassan)</div>
-        </div>
-      </div>
-
+    <div class="splash-gear">⚙️</div>
+    <h2 style="margin: 0; font-size: 1.5rem;">نظام الصيانة وتحليل العيوب</h2>
+    <p style="margin: 5px 0 15px 0; opacity: 0.8; font-size: 0.9rem;">Maintenance & Defect System</p>
+    <div style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
+      v1.0 - 2026
     </div>
   </div>
 
-  <!-- [1] شاشة تسجيل بلاغ صيانة -->
-  <div id="maint-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-maint">تسجيل بلاغ صيانة</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
+  <!-- [صفحة 2 & 3] الشاشة الرئيسية -->
+  <div class="app-header">
+    <div class="user-info">
+      👋 <span id="txt-welcome">أهلاً:</span> <span id="user-name">محمد حسن</span> 
+      <span style="font-weight:normal; color: var(--gray-text);" id="user-role-lbl">(مدير)</span>
     </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
+    <div class="header-controls">
+      <!-- زر تبديل الصلاحية للعرض التجريبي -->
+      <select id="role-selector" class="btn-icon" onchange="changeRole(this.value)" style="padding: 4px;">
+        <option value="admin">👨‍💼 مدير</option>
+        <option value="engineer">👷‍♂️ مهندس</option>
+        <option value="tech">🔧 فني</option>
+      </select>
+      <button class="btn-icon" onclick="toggleLanguage()" id="lang-btn">EN</button>
+      <button class="btn-icon" onclick="toggleDarkMode()">🌙</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- [📊 لوحة المتابعة - Dashboard] -->
+    <div class="dashboard-card">
+      <div style="font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span id="txt-dash-title">📊 لوحة المتابعة</span>
+        <span style="font-size: 0.75rem; color: var(--gray-text);" id="txt-today">اليوم</span>
+      </div>
       
-      <div class="form-card">
-        <div class="form-group">
-          <label id="lbl-maint-device">المعدة / خط الإنتاج:</label>
-          <input type="text" id="maint-device" placeholder="مثال: خط الدهان 2 / ماكينة 5">
+      <div class="stats-grid">
+        <div class="stat-badge">
+          <div class="stat-val">3</div>
+          <div class="stat-lbl" id="lbl-open-tickets">بلاغات مفتوحة</div>
         </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-type">نوع العيب / المشكلة:</label>
-          <select id="maint-issue-type">
-            <option value="صيانة ميكانيكية" id="opt-maint-mech">صيانة ميكانيكية</option>
-            <option value="صيانة كهربائية" id="opt-maint-elec">صيانة كهربائية</option>
-            <option value="عيب جودة خامات" id="opt-maint-raw">عيب جودة خامات</option>
-            <option value="أخرى" id="opt-maint-other">أخرى</option>
-          </select>
+        <div class="stat-badge">
+          <div class="stat-val" style="color: #ef4444;">5</div>
+          <div class="stat-lbl" id="lbl-pm-late">PM متأخرة</div>
         </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-priority">درجة الأولوية:</label>
-          <select id="maint-priority">
-            <option value="عالية 🔴" id="opt-prio-high">عالية 🔴</option>
-            <option value="متوسطة 🟡" id="opt-prio-med">متوسطة 🟡</option>
-            <option value="منخفضة 🟢" id="opt-prio-low">منخفضة 🟢</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-assign">مسندة إلى (الفني / المهندس):</label>
-          <input type="text" id="maint-assigned" placeholder="اسم المهندس المسؤول">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-phone">رقم واتساب المهندس (للتنبيه المباشر):</label>
-          <input type="tel" id="maint-phone" placeholder="مثال: 201000000000">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-date">الموعد النهائي لتنفيذ المهمة:</label>
-          <input type="date" id="maint-due-date">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-photo">صورة العطل (اختياري):</label>
-          <div class="photo-buttons">
-            <label class="btn-photo">📷 <span class="btn-cam-txt">الكاميرا</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleMaintImage(this)"></label>
-            <label class="btn-photo">🖼️ <span class="btn-gallery-txt">المعرض</span><input type="file" accept="image/*" style="display:none" onchange="handleMaintImage(this)"></label>
-          </div>
-          <img id="maint-image-preview" alt="معاينة صيانة">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-maint-notes">وصف المشكلة / القطع المطلوبة:</label>
-          <textarea id="maint-notes" rows="2" placeholder="تفاصيل العطل..."></textarea>
-        </div>
-
-        <button class="btn-submit" id="btn-save-maint" onclick="submitMaintenanceIssue()">حفظ وتسجيل المهمة</button>
-        <button id="whatsapp-maint-btn" class="btn-submit btn-whatsapp" style="display:none;" onclick="sendWhatsAppNotification()">📲 إرسال تنبيه عبر واتساب للمهندس</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- [2] شاشة سجل بلاغات الصيانة -->
-  <div id="maint-log-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-maint-log">سجل بلاغات الصيانة</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      <div id="maint-log-list"></div>
-    </div>
-  </div>
-
-  <!-- [3] شاشة إضافة عيب علبة -->
-  <div id="form-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-2">إضافة تحليل العيب</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      
-      <div class="form-card">
-        <div class="form-group">
-          <label id="lbl-title">عنوان العيب / المشكلة:</label>
-          <input type="text" id="defect-title" placeholder="Rim Dent / Flange Distortion">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-category">تصنيف العيب:</label>
-          <select id="defect-category">
-            <option value="تشوه حافة" id="opt-1">تشوه حافة (Rim Dent / Flange)</option>
-            <option value="خدش في الدهان" id="opt-2">خدش في الدهان (Scratch)</option>
-            <option value="تسريب" id="opt-3">تسريب (Leakage)</option>
-            <option value="أخرى" id="opt-4">أخرى (Other)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-photo">صورة العيب:</label>
-          <div class="photo-buttons">
-            <label class="btn-photo">📷 <span class="btn-cam-txt">الكاميرا</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)"></label>
-            <label class="btn-photo">🖼️ <span class="btn-gallery-txt">المعرض</span><input type="file" accept="image/*" style="display:none" onchange="handleImage(this)"></label>
-          </div>
-          <img id="image-preview" alt="معاينة الصورة">
-        </div>
-
-        <div class="form-group">
-          <label id="lbl-desc">التفاصيل والوصف:</label>
-          <textarea id="defect-desc" rows="3"></textarea>
-        </div>
-
-        <button class="btn-submit" id="btn-save" onclick="saveDefect()">حفظ وتحليل العيب</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- [4] شاشة اكتشاف العيب (AI) -->
-  <div id="detect-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-ai">اكتشاف عيب بالذكاء الاصطناعي</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      <div class="form-card" style="text-align: center;">
-        <h3 id="txt-ai-box-title">التقط صورة للتحليل الفوري</h3>
-        <p style="color: #64748b; font-size: 0.85rem;" id="txt-ai-box-desc">سيقوم النظام بالتعرف على نوع العيب تلقائياً</p>
-        
-        <img id="image-preview-ai" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none;" alt="معاينة الفحص">
-
-        <label class="btn-submit" style="display: inline-block; width: auto; padding: 10px 20px; margin-top: 15px; cursor: pointer;">
-          📷 <span id="btn-capture-txt">التقاط صورة الآن</span>
-          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="simulateAI(this)">
-        </label>
-
-        <div id="ai-loading" style="display:none; margin-top: 20px;">
-          <div class="loader" style="margin: auto; border-top-color: #16a34a;"></div>
-          <p style="margin-top: 10px; font-weight: bold; color: #16a34a;" id="txt-ai-loading">جاري تحليل الصورة بالذكاء الاصطناعي...</p>
-        </div>
-
-        <div id="ai-result" style="display:none; margin-top: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; text-align: right;">
-          <h4 style="color: #166534; margin-top: 0;" id="txt-ai-result-title">نتيجة التحليل:</h4>
-          <p><strong id="txt-ai-exp">العيب المتوقع:</strong> <span id="ai-defect-type">تشوه حافة (Rim Dent)</span></p>
-          <p><strong id="txt-ai-acc">نسبة الدقة:</strong> <span id="ai-defect-acc" style="color:#16a34a; font-weight:bold;">94.2%</span></p>
+        <div class="stat-badge">
+          <div class="stat-val" style="color: var(--primary);">12</div>
+          <div class="stat-lbl" id="lbl-today-defects">عيوب اليوم</div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- [5] شاشة قاعدة معرفة العيوب -->
-  <div id="kb-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-3">قاعدة المعرفة</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      <div id="defects-list"></div>
-    </div>
-  </div>
-
-  <!-- [6] شاشة الإحصائيات -->
-  <div id="stats-screen" class="screen">
-    <div class="app-header">
-      <span id="app-title-stats">الإحصائيات</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      
-      <div class="stat-box">
-        <div style="color: #64748b; font-size: 0.85rem;" id="txt-total-defects">إجمالي العيوب المسجلة</div>
-        <div class="stat-number" id="total-defects-count">0</div>
-      </div>
-
-      <div class="form-card">
-        <h4 style="margin-top:0;" id="txt-dist-title">توزيع العيوب حسب النوع</h4>
-        <div id="stats-details" style="color: #475569; font-size: 0.9rem;"></div>
+      <!-- الرسم البياني -->
+      <div style="margin-top: 10px; height: 140px;">
+        <canvas id="chartMachines"></canvas>
       </div>
     </div>
+
+    <!-- [🛠️ قسم الصيانة والمهام] -->
+    <div class="section-title" id="sec-maint-title">🛠️ قسم الصيانة والمهام</div>
+    <div class="grid-buttons">
+      <div class="btn-action" onclick="alertAction('تسجيل بلاغ')">
+        <span class="icon">🚨</span>
+        <span class="text" id="btn-m1">تسجيل بلاغ</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('تسجيل PM')">
+        <span class="icon">📝</span>
+        <span class="text" id="btn-m2">تسجيل PM</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('سجل الصيانة')">
+        <span class="icon">📋</span>
+        <span class="text" id="btn-m3">سجل الصيانة</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('الجدولة')">
+        <span class="icon">🗓️</span>
+        <span class="text" id="btn-m4">الجدولة</span>
+      </div>
+      <div class="btn-action" style="grid-column: span 2;" onclick="alertAction('مسح QR')">
+        <span class="icon">📱</span>
+        <span class="text" id="btn-m5">مسح QR الماكينات</span>
+      </div>
+    </div>
+
+    <!-- [📦 قسم تحليل عيوب الإنتاج] -->
+    <div class="section-title" id="sec-defects-title">📦 قسم تحليل عيوب الإنتاج</div>
+    <div class="grid-buttons">
+      <div class="btn-action" onclick="alertAction('تصوير عيب')">
+        <span class="icon">📷</span>
+        <span class="text" id="btn-d1">تصوير عيب</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('فحص AI')">
+        <span class="icon">🤖</span>
+        <span class="text" id="btn-d2">فحص AI</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('قاعدة معرفة')">
+        <span class="icon">📚</span>
+        <span class="text" id="btn-d3">قاعدة المعرفة</span>
+      </div>
+      <div class="btn-action" onclick="alertAction('الإحصائيات')">
+        <span class="icon">📊</span>
+        <span class="text" id="btn-d4">الإحصائيات</span>
+      </div>
+      <div class="btn-action" style="grid-column: span 2;" onclick="alertAction('التقارير')">
+        <span class="icon">📄</span>
+        <span class="text" id="btn-d5">تصدير التقارير</span>
+      </div>
+    </div>
+
+    <!-- [👥 إدارة المستخدمين] (للمدير فقط) -->
+    <div id="admin-section">
+      <div class="section-title" id="sec-users-title">👥 إدارة المستخدمين</div>
+      <div class="btn-action" style="width: 100%; margin-bottom: 15px;" onclick="alertAction('إدارة المستخدمين')">
+        <span class="icon">⚙️</span>
+        <span class="text" id="btn-u1">إدارة الصلاحيات والمستخدمين (للمدير فقط)</span>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Footer -->
+  <!-- [الفوتر] -->
   <footer>
-    <p style="margin: 0;">
-      © 2026 جميع الحقوق محفوظة | تم التطوير بواسطة <strong style="color: #2563eb;">(Mohamed Hassan Ibrahim)</strong>
-    </p>
+    <div id="txt-footer-contact">تواصل مع الدعم الفني والتطوير</div>
+    <button class="logout-btn" onclick="alert('تم تسجيل الخروج')" id="btn-logout">تسجيل الخروج ➔</button>
+    <div style="margin-top: 8px;" id="txt-copy">© 2026 جميع الحقوق محفوظة | Mohamed Hassan</div>
   </footer>
 
   <script>
     let currentLang = 'ar';
-    let base64Image = "";
-    let aiBase64Image = "";
-    let maintBase64Image = "";
-    let lastSavedTaskData = null;
+    let myChart = null;
 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPhOWUSUreQVHEKU7a3zemUHDpSJGMlu4mxQj0U3DBptM49cfHZBnPfoUW6PxGCSqe/exec";
-
+    // إخفاء شاشة الغلاف بعد ثانيتين
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       splash.style.opacity = '0';
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 1200);
+    }, 2000);
 
-    function openScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+    // تبديل الوضع الداكن
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      initChart(); // إعادة رسم الرسم البياني ليتناسب مع الألوان
     }
 
-    function handleImage(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          base64Image = e.target.result;
-          const img = document.getElementById('image-preview');
-          img.src = base64Image;
-          img.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    function handleMaintImage(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          maintBase64Image = e.target.result;
-          const img = document.getElementById('maint-image-preview');
-          img.src = maintBase64Image;
-          img.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    function saveDefect() {
-      const title = document.getElementById('defect-title').value;
-      const category = document.getElementById('defect-category').value;
-      const desc = document.getElementById('defect-desc').value;
-
-      if (!title) {
-        alert(currentLang === 'ar' ? 'الرجاء كتابة عنوان العيب!' : 'Please enter defect title!');
-        return;
-      }
-
-      const newDefect = {
-        id: Date.now(),
-        title: title,
-        category: category,
-        desc: desc,
-        image: base64Image
-      };
-
-      let defects = JSON.parse(localStorage.getItem('defects') || '[]');
-      defects.unshift(newDefect);
-      localStorage.setItem('defects', JSON.stringify(defects));
-
-      alert(currentLang === 'ar' ? 'تم حفظ العيب في قاعدة البيانات بنجاح! 📦' : 'Defect saved successfully!');
-      document.getElementById('defect-title').value = '';
-      document.getElementById('defect-desc').value = '';
-      document.getElementById('image-preview').style.display = 'none';
-      base64Image = "";
-      openScreen('home-screen');
-    }
-
-    async function submitMaintenanceIssue() {
-      const device = document.getElementById('maint-device').value;
-      if (!device) {
-        alert(currentLang === 'ar' ? 'يرجى إدخال اسم المعدة أو خط الإنتاج!' : 'Please enter device name!');
-        return;
-      }
-
-      const payload = {
-        id: Date.now(),
-        action: "save_maintenance",
-        device: device,
-        issueType: document.getElementById('maint-issue-type').value,
-        priority: document.getElementById('maint-priority').value,
-        assignedTo: document.getElementById('maint-assigned').value,
-        dueDate: document.getElementById('maint-due-date').value,
-        notes: document.getElementById('maint-notes').value,
-        image: maintBase64Image
-      };
-
-      let maintTasks = JSON.parse(localStorage.getItem('maintenance_tasks') || '[]');
-      maintTasks.unshift(payload);
-      localStorage.setItem('maintenance_tasks', JSON.stringify(maintTasks));
-
-      lastSavedTaskData = payload;
-
-      try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        alert(currentLang === 'ar' ? 'تم تسجيل بلاغ الصيانة بنجاح!' : 'Maintenance issue saved!');
-        document.getElementById('whatsapp-maint-btn').style.display = 'block';
-      } catch (err) {
-        alert("خطأ أثناء الإرسال: " + err);
-      }
-    }
-
-    function sendWhatsAppNotification() {
-      if (!lastSavedTaskData) return;
-      const phone = document.getElementById('maint-phone').value.replace(/[^0-9]/g, '');
-      if (!phone) {
-        alert(currentLang === 'ar' ? 'يرجى إدخال رقم واتساب المهندس!' : 'Please enter WhatsApp number!');
-        return;
-      }
-
-      const text = `🚨 *تنبيه بلاغ صيانة ومهمة جديدة!*
-⚙️ *المعدة:* ${lastSavedTaskData.device}
-⚠️ *نوع المشكلة:* ${lastSavedTaskData.issueType}
-🔴 *الأولوية:* ${lastSavedTaskData.priority}
-👤 *المسند إليه:* ${lastSavedTaskData.assignedTo || 'غير محدد'}
-📅 *الموعد:* ${lastSavedTaskData.dueDate || 'غير محدد'}
-📝 *ملاحظات:* ${lastSavedTaskData.notes || 'لا يوجد'}`;
-
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function loadMaintenanceLog() {
-      openScreen('maint-log-screen');
-      const listContainer = document.getElementById('maint-log-list');
-      let maintTasks = JSON.parse(localStorage.getItem('maintenance_tasks') || '[]');
-
-      if (maintTasks.length === 0) {
-        listContainer.innerHTML = `<p style="text-align:center; color:#64748b;">${currentLang === 'ar' ? 'لا توجد بلاغات صيانة مسجلة بعد' : 'No maintenance tasks recorded'}</p>`;
-        return;
-      }
-
-      listContainer.innerHTML = maintTasks.map(item => `
-        <div class="maint-item">
-          ${item.image ? `<img src="${item.image}">` : `<div style="width:65px;height:65px;background:#e0f2fe;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;">🛠️</div>`}
-          <div style="flex: 1;">
-            <div style="font-weight:bold; color:#1e293b;">${item.device}</div>
-            <div style="font-size:0.8rem; color:#0284c7;">${item.issueType} | ${item.priority}</div>
-            <div style="font-size:0.8rem; color:#64748b; margin-top:3px;">👤 ${item.assignedTo || 'غير محدد'} | 📅 ${item.dueDate || 'بدون موعد'}</div>
-            ${item.notes ? `<div style="font-size:0.8rem; color:#475569; margin-top:2px;">📝 ${item.notes}</div>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function openPreventiveMaint() {
-      alert(currentLang === 'ar' ? "🗓️ جدول الصيانة الوقائية:\n\n1. فحص طلمبات الدهان (أسبوعياً)\n2. تشحيم السيور وماكينات الضغط (شهرياً)\n3.عايرة مستشعرات الفحص (كل أسبوعين)" : "Preventive Maintenance Schedule active.");
-    }
-
-    function loadKnowledgeBase() {
-      openScreen('kb-screen');
-      const listContainer = document.getElementById('defects-list');
-      let defects = JSON.parse(localStorage.getItem('defects') || '[]');
-
-      if (defects.length === 0) {
-        listContainer.innerHTML = `<p style="text-align:center; color:#64748b;">${currentLang === 'ar' ? 'لا توجد عيوب محفوظة بعد' : 'No saved defects found'}</p>`;
-        return;
-      }
-
-      listContainer.innerHTML = defects.map(item => `
-        <div class="defect-item">
-          ${item.image ? `<img src="${item.image}">` : `<div style="width:65px;height:65px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;">📷</div>`}
-          <div>
-            <div style="font-weight:bold; color:#1e293b;">${item.title}</div>
-            <div style="font-size:0.8rem; color:#2563eb;">${item.category}</div>
-            <div style="font-size:0.8rem; color:#64748b; margin-top:3px;">${item.desc || ''}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function loadStats() {
-      openScreen('stats-screen');
-      let defects = JSON.parse(localStorage.getItem('defects') || '[]');
-      document.getElementById('total-defects-count').innerText = defects.length;
-
-      const counts = {};
-      defects.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-
-      const statsDetails = document.getElementById('stats-details');
-      if (defects.length === 0) {
-        statsDetails.innerHTML = `<p style="text-align:center; color:#94a3b8;">${currentLang === 'ar' ? 'لا توجد بيانات كافية' : 'No data available'}</p>`;
+    // تبديل الصلاحية (للتجربة)
+    function changeRole(role) {
+      const adminSec = document.getElementById('admin-section');
+      const roleLbl = document.getElementById('user-role-lbl');
+      if (role === 'admin') {
+        adminSec.style.display = 'block';
+        roleLbl.innerText = currentLang === 'ar' ? '(مدير)' : '(Admin)';
+      } else if (role === 'engineer') {
+        adminSec.style.display = 'none';
+        roleLbl.innerText = currentLang === 'ar' ? '(مهندس جودة)' : '(QA Engineer)';
       } else {
-        statsDetails.innerHTML = Object.keys(counts).map(cat => `
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
-            <span>${cat}</span>
-            <span style="font-weight:bold; color:#2563eb;">${counts[cat]}</span>
-          </div>
-        `).join('');
+        adminSec.style.display = 'none';
+        roleLbl.innerText = currentLang === 'ar' ? '(فني)' : '(Technician)';
       }
     }
 
-    function openSuggestions() {
-      const userFeedback = prompt(currentLang === 'ar' ? "اكتب اقتراحك للمطور (Mohamed Hassan):" : "Enter your suggestion:");
-      if (userFeedback && userFeedback.trim() !== "") {
-        window.open(`https://wa.me/201067988554?text=${encodeURIComponent('💡 اقتراح جديد:\n' + userFeedback)}`, '_blank');
-      }
-    }
-
-    function simulateAI(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById('image-preview-ai').src = e.target.result;
-          document.getElementById('image-preview-ai').style.display = 'block';
-          document.getElementById('ai-loading').style.display = 'block';
-          document.getElementById('ai-result').style.display = 'none';
-
-          setTimeout(() => {
-            document.getElementById('ai-loading').style.display = 'none';
-            document.getElementById('ai-result').style.display = 'block';
-          }, 1200);
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
+    // القاموس اللغوي (عربي / English)
     const translations = {
       ar: {
-        dir: 'rtl', langBtn: 'EN',
-        appTitle1: 'الرئيسية', splashTitle: 'نظام الجودة والصيانة',
-        secMaintTitle: '🛠️ قسم الصيانة والمهام',
-        secDefectsTitle: '📦 قسم تحليل عيوب العلب',
-        mMaint1Title: 'تسجيل بلاغ عطل / مهمة', mMaint1Sub: 'إرسال بلاغ صيانة مباشر وإخطار المهندس',
-        mMaint2Title: 'سجل بلاغات الصيانة', mMaint2Sub: 'عرض ومتابعة كافة بلاغات الصيانة السابقة',
-        mMaint3Title: 'الصيانة الوقائية والجدولة', mMaint3Sub: 'جدول الفحص الدوري للمعدات والخطوط',
-        m1Title: 'تصوير عيب جديد', m1Sub: 'إضافة عيب جديد إلى قاعدة البيانات',
-        m2Title: 'اكتشاف عيب بالذكاء الاصطناعي', m2Sub: 'تصوير العيب وتحليله فوراً بواسطة AI',
-        m3Title: 'قاعدة معرفة العيوب', m3Sub: 'عرض كافة عيوب العلب المسجلة والحلول',
-        m4Title: 'إحصائيات العيوب', m4Sub: 'إحصائيات خطوط الإنتاج ونسب العيوب',
-        m5Title: 'إرسال اقتراح أو ملاحظة', m5Sub: 'تواصل مباشر مع المطور (Mohamed Hassan)'
+        dir: 'rtl', langBtn: 'EN', welcome: 'أهلاً:', today: 'اليوم',
+        dashTitle: '📊 لوحة المتابعة', openTickets: 'بلاغات مفتوحة', pmLate: 'PM متأخرة', todayDefects: 'عيوب اليوم',
+        secMaint: '🛠️ قسم الصيانة والمهام',
+        m1: 'تسجيل بلاغ', m2: 'تسجيل PM', m3: 'سجل الصيانة', m4: 'الجدولة', m5: 'مسح QR الماكينات',
+        secDefects: '📦 قسم تحليل عيوب الإنتاج',
+        d1: 'تصوير عيب', d2: 'فحص AI', d3: 'قاعدة المعرفة', d4: 'الإحصائيات', d5: 'تصدير التقارير',
+        secUsers: '👥 إدارة المستخدمين', u1: 'إدارة الصلاحيات والمستخدمين (للمدير فقط)',
+        contact: 'تواصل مع الدعم الفني والتطوير', logout: 'تسجيل الخروج ➔', copy: '© 2026 جميع الحقوق محفوظة | Mohamed Hassan',
+        chartLabel: 'أكثر 3 ماكينات أعطالاً'
       },
       en: {
-        dir: 'ltr', langBtn: 'عربي',
-        appTitle1: 'Dashboard', splashTitle: 'Quality & Maintenance System',
-        secMaintTitle: '🛠️ Maintenance & Tasks Section',
-        secDefectsTitle: '📦 Can Defects Analysis Section',
-        mMaint1Title: 'Record Maintenance Issue', mMaint1Sub: 'Submit task and notify engineer',
-        mMaint2Title: 'Maintenance Tasks Log', mMaint2Sub: 'View all previous maintenance logs',
-        mMaint3Title: 'Preventive Maintenance', mMaint3Sub: 'Schedule routine machine inspections',
-        m1Title: 'Capture New Defect', m1Sub: 'Add new defect to database',
-        m2Title: 'AI Defect Detection', m2Sub: 'Instant defect analysis using AI',
-        m3Title: 'Defect Knowledge Base', m3Sub: 'View recorded defects and solutions',
-        m4Title: 'Defect Statistics', m4Sub: 'Production line & defect analytics',
-        m5Title: 'Send Suggestion', m5Sub: 'Direct contact with developer (Mohamed)'
+        dir: 'ltr', langBtn: 'عربي', welcome: 'Welcome:', today: 'Today',
+        dashTitle: '📊 Dashboard Overview', openTickets: 'Open Tickets', pmLate: 'Overdue PM', todayDefects: 'Today Defects',
+        secMaint: '🛠️ Maintenance & Tasks',
+        m1: 'New Ticket', m2: 'Record PM', m3: 'Maint. Log', m4: 'Schedule', m5: 'Scan Machine QR',
+        secDefects: '📦 Defects Analysis',
+        d1: 'Capture Defect', d2: 'AI Inspect', d3: 'Knowledge Base', d4: 'Statistics', d5: 'Export Reports',
+        secUsers: '👥 Users Management', u1: 'Manage Roles & Users (Admin Only)',
+        contact: 'Contact Technical Support', logout: 'Logout ➔', copy: '© 2026 All Rights Reserved | Mohamed Hassan',
+        chartLabel: 'Top 3 Faulty Machines'
       }
     };
 
@@ -675,24 +286,75 @@
       const t = translations[currentLang];
 
       document.getElementById('html-tag').dir = t.dir;
-      document.querySelectorAll('.lang-btn').forEach(b => b.innerText = t.langBtn);
+      document.getElementById('lang-btn').innerText = t.langBtn;
 
-      document.getElementById('app-title-1').innerText = t.appTitle1;
-      document.getElementById('splash-title').innerText = t.splashTitle;
+      document.getElementById('txt-welcome').innerText = t.welcome;
+      document.getElementById('txt-dash-title').innerText = t.dashTitle;
+      document.getElementById('txt-today').innerText = t.today;
+      document.getElementById('lbl-open-tickets').innerText = t.openTickets;
+      document.getElementById('lbl-pm-late').innerText = t.pmLate;
+      document.getElementById('lbl-today-defects').innerText = t.todayDefects;
 
-      document.getElementById('sec-maint-title').innerText = t.secMaintTitle;
-      document.getElementById('sec-defects-title').innerText = t.secDefectsTitle;
+      document.getElementById('sec-maint-title').innerText = t.secMaint;
+      document.getElementById('btn-m1').innerText = t.m1; document.getElementById('btn-m2').innerText = t.m2;
+      document.getElementById('btn-m3').innerText = t.m3; document.getElementById('btn-m4').innerText = t.m4;
+      document.getElementById('btn-m5').innerText = t.m5;
 
-      document.getElementById('m-maint1-title').innerText = t.mMaint1Title; document.getElementById('m-maint1-sub').innerText = t.mMaint1Sub;
-      document.getElementById('m-maint2-title').innerText = t.mMaint2Title; document.getElementById('m-maint2-sub').innerText = t.mMaint2Sub;
-      document.getElementById('m-maint3-title').innerText = t.mMaint3Title; document.getElementById('m-maint3-sub').innerText = t.mMaint3Sub;
+      document.getElementById('sec-defects-title').innerText = t.secDefects;
+      document.getElementById('btn-d1').innerText = t.d1; document.getElementById('btn-d2').innerText = t.d2;
+      document.getElementById('btn-d3').innerText = t.d3; document.getElementById('btn-d4').innerText = t.d4;
+      document.getElementById('btn-d5').innerText = t.d5;
 
-      document.getElementById('m1-title').innerText = t.m1Title; document.getElementById('m1-sub').innerText = t.m1Sub;
-      document.getElementById('m2-title').innerText = t.m2Title; document.getElementById('m2-sub').innerText = t.m2Sub;
-      document.getElementById('m3-title').innerText = t.m3Title; document.getElementById('m3-sub').innerText = t.m3Sub;
-      document.getElementById('m4-title').innerText = t.m4Title; document.getElementById('m4-sub').innerText = t.m4Sub;
-      document.getElementById('m5-title').innerText = t.m5Title; document.getElementById('m5-sub').innerText = t.m5Sub;
+      document.getElementById('sec-users-title').innerText = t.secUsers;
+      document.getElementById('btn-u1').innerText = t.u1;
+
+      document.getElementById('txt-footer-contact').innerText = t.contact;
+      document.getElementById('btn-logout').innerText = t.logout;
+      document.getElementById('txt-copy').innerText = t.copy;
+
+      changeRole(document.getElementById('role-selector').value);
+      initChart();
     }
+
+    // بناء الرسم البياني
+    function initChart() {
+      const ctx = document.getElementById('chartMachines').getContext('2d');
+      const isDark = document.body.classList.contains('dark-mode');
+      const t = translations[currentLang];
+
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: currentLang === 'ar' ? ['ماكينة 2', 'خط الدهان 1', 'مكبس 4'] : ['Machine 2', 'Coating Line 1', 'Press 4'],
+          datasets: [{
+            label: t.chartLabel,
+            data: [8, 5, 4],
+            backgroundColor: ['#EA580C', '#1E40AF', '#4B5563'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 } } },
+            y: { ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function alertAction(actionName) {
+      alert(currentLang === 'ar' ? `فتح شاشة: ${actionName}` : `Opening: ${actionName}`);
+    }
+
+    // تشغيل الرسم البياني فور التحميل
+    window.onload = () => { initChart(); };
   </script>
 </body>
 </html>
