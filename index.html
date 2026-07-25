@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <script>
+    <script>
     // Service Worker & Manifest
     if('serviceWorker' in navigator){
       const swCode = `
@@ -23,6 +23,7 @@
       navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
 
+    // تعديل الـ Manifest لتغيير لون الخلفية وإلغاء الأيقونة القديمة
     const manifest = {
       "name": "نظام الصيانة وتحليل العيوب",
       "short_name": "صيانة",
@@ -31,12 +32,13 @@
       "background_color": "#0E1117",
       "theme_color": "#0E1117",
       "lang": "ar",
-      "icons": [{"src": "1000230635.png", "sizes": "512x512", "type": "image/png"}]
+      "icons": []
     };
     const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
     const manifestURL = URL.createObjectURL(manifestBlob);
     document.write(`<link rel="manifest" href="${manifestURL}">`);
-  </script>
+   </script> 
+  
 
   <style>
     :root {
