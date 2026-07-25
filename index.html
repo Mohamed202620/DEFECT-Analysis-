@@ -563,55 +563,39 @@
       document.getElementById('cameraInput').value = '';
     }
 
-    async function saveDefectData() {
-      const line = document.getElementById('lineSelect').value;
-      const name = document.getElementById('defectName').value.trim();
-      const location = document.getElementById('defectLocation').value.trim();
-      const description = document.getElementById('defectDesc').value.trim();
-
-      if (!defectImageData) {
-        alert('⚠️ من فضلك التقط أو اختر صورة للعيب أولاً');
-        return;
-      }
-
-      if (!name) {
-        alert('⚠️ من فضلك أدخل اسم العيب');
-        return;
-      }
-
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerText = 'جاري الرفع لـ Google Sheets... ⏳';
-
-      const payload = {
-        line: line,
-        name: name,
-        location: location,
-        description: description,
-        image: defectImageData,
-        date: new Date().toLocaleString('ar-EG')
-      };
-
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // لتفادي مشاكل CORS مع Google Apps Script
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        alert('تم حفظ العيب بنجاح وإرساله إلى Google Sheets لتدريب الـ AI ✅');
-        defectImageData = null;
-        navigateTo('home');
-      } catch (error) {
-        console.error("خطأ أثناء الإرسال:", error);
-        alert('حدث خطأ أثناء الإرسال، برجاء المحاولة لاحقاً ❌');
-        submitBtn.disabled = false;
-        submitBtn.innerText = '✅ حفظ وإرسال';
-      }
-    }
+    
   </script>
+async function saveDefectData() {
+  const line = document.getElementById('lineSelect').value;
+  const name = document.getElementById('defectName').value.trim();
+  const location = document.getElementById('defectLocation').value.trim();
+  const description = document.getElementById('defectDesc').value.trim();
 
+  if (!defectImageData) { alert('⚠️ حط صورة'); return; }
+  if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
+
+  const payload = {
+    action: "saveDefect",
+    user: { name: "محمد حسن", phone: "01000000", job: "فني", role: "tech" },
+    line: line, name: name, location: location, description: description,
+    image: defectImageData, date: new Date().toLocaleString('ar-EG')
+  };
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (result.status === 'success') {
+      alert('✅ تم الحفظ بنجاح');
+      navigateTo('home');
+    }
+  } catch (error) {
+    alert('❌ خطأ: ' + error.message);
+  }
+}
   <!-- تسجيل الـ Service Worker الخارجي بشكل صحيح -->
   <script>
     if ('serviceWorker' in navigator) {
