@@ -307,11 +307,38 @@
   <script>
     let currentLang = 'ar';
     let base64Image = "";
+    let aiBase64Image = ""; // متغير جديد لحفظ صورة فحص الذكاء الاصطناعي
+
+    // === رابط API الخاص بجوجل شيت ودرايف ===
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPhOWUSUreQVHEKU7a3zemUHDpSJGMlu4mxQj0U3DBptM49cfHZBnPfoUW6PxGCSqe/exec";
 
     // === إعدادات الذكاء الاصطناعي (Teachable Machine) ===
-    // استبدل هذا الرابط برابط نموذجك الخاص بعد تدريبه على Teachable Machine
     const MODEL_URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_CODE/"; 
     let aiModel, maxPredictions;
+
+    // دالة إرسال البيانات للذكاء الاصطناعي (Google Sheets & Drive)
+    async function sendDefectReport(base64Data, correctLabel, aiPrediction, notes = "") {
+      try {
+        const payload = {
+          image: base64Data,
+          correctLabel: correctLabel,
+          aiPrediction: aiPrediction,
+          notes: notes
+        };
+
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alert(currentLang === 'ar' ? 'تم رفع الصورة والتصنيف بنجاح لتدريب الذكاء الاصطناعي! 🚀' : 'Image and label uploaded successfully for AI training! 🚀');
+      } catch (error) {
+        console.error("خطأ في الإرسال:", error);
+        alert(currentLang === 'ar' ? 'حدث خطأ أثناء الإرسال، حاول مرة أخرى.' : 'Error sending data, please try again.');
+      }
+    }
 
     // دالة تحميل نموذج الذكاء الاصطناعي
     async function initAIModel() {
@@ -407,10 +434,19 @@
       }
     }
 
-    function trainNewDefect() {
+    // دالة إضافة الصورة لتدريب الذكاء الاصطناعي ورفعها لـ Google Drive و Sheets
+    async function trainNewDefect() {
       const defectLabel = prompt(currentLang === 'ar' ? "ما هو التصنيف الصحيح لهذا العيب؟ (مثال: خدش سطحي):" : "What is the correct label for this defect?");
-      if (defectLabel) {
-        alert(currentLang === 'ar' ? `تم حفظ الصورة تحت تصنيف "${defectLabel}" لتدريب الذكاء الاصطناعي!` : `Image saved under "${defectLabel}" for AI training!`);
+      if (defectLabel && defectLabel.trim() !== "") {
+        const currentAiPrediction = document.getElementById('ai-defect-type').innerText;
+        
+        if (!aiBase64Image) {
+          alert(currentLang === 'ar' ? 'الرجاء التقاط صورة أولاً!' : 'Please capture an image first!');
+          return;
+        }
+
+        // إرسال البيانات فوراً لـ Apps Script
+        await sendDefectReport(aiBase64Image, defectLabel, currentAiPrediction, "إعادة تدريب من واجهة PWA");
       }
     }
 
@@ -462,8 +498,9 @@
       if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = async function (e) {
+          aiBase64Image = e.target.result; // حفظ الصورة
           const imgPreview = document.getElementById('image-preview-ai');
-          imgPreview.src = e.target.result;
+          imgPreview.src = aiBase64Image;
           imgPreview.style.display = 'block';
 
           document.getElementById('ai-loading').style.display = 'block';
