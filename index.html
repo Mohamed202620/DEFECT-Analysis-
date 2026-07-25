@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-tag">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام الصيانة وتحليل العيوب</title>
+  <title>Maintenance & Defect System v1.0</title>
   <meta name="theme-color" content="#1E40AF">
   
-  <!-- Tailwind CSS & Chart.js -->
+  <!-- Chart.js & Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // Service Worker داخل نفس الملف
+    // Service Worker & Manifest
     if('serviceWorker' in navigator){
       const swCode = `
-        const CACHE = 'maintenance-v1';
+        const CACHE = 'maint-v1';
         self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.add('/'))));
         self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
       `;
@@ -22,7 +22,6 @@
       navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
 
-    // Manifest داخل نفس الملف
     const manifest = {
       "name": "نظام الصيانة وتحليل العيوب",
       "short_name": "صيانة",
@@ -37,227 +36,406 @@
     const manifestURL = URL.createObjectURL(manifestBlob);
     document.write(`<link rel="manifest" href="${manifestURL}">`);
   </script>
+
+  <style>
+    :root {
+      --primary: #1E40AF;
+      --accent: #EA580C;
+      --gray-text: #9ca3af;
+      --bg-main: #0E1117;
+      --card-bg: #1E293B;
+      --border-color: #334155;
+      --text-color: #ffffff;
+    }
+
+    body.light-mode {
+      --primary: #2563eb;
+      --accent: #ea580c;
+      --gray-text: #4b5563;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-color: #0f172a;
+    }
+
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s; }
+    body { background-color: var(--bg-main); color: var(--text-color); margin: 0; padding: 0; min-height: 100vh; }
+
+    /* Splash Screen */
+    #splash-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #1E40AF 0%, #1e3a8a 100%); color: white;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 1000; transition: opacity 0.5s ease; text-align: center; padding: 20px;
+    }
+    .splash-gear { font-size: 70px; animation: spin 8s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Header & Buttons */
+    .app-header { 
+      background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 12px 16px; 
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+    }
+    .btn-icon {
+      background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-color);
+      padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
+    }
+    .dashboard-card {
+      background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+    }
+    .btn-action {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 12px; text-align: center; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px; width: 100%;
+    }
+    .btn-action:active { transform: scale(0.96); }
+  </style>
 </head>
-<body class="bg-[#0E1117] text-white min-h-screen">
+<body>
+
+  <!-- 1️⃣ صفحة الغلاف Splash Screen -->
+  <div id="splash-screen">
+    <div class="splash-gear">⚙️</div>
+    <h2 style="margin: 0; font-size: 1.5rem;">نظام الصيانة وتحليل العيوب</h2>
+    <p style="margin: 5px 0 15px 0; opacity: 0.8; font-size: 0.9rem;">Maintenance & Defect System</p>
+    <div style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
+      v1.0 - 2026
+    </div>
+  </div>
+
+  <!-- حاوية التطبيق SPA -->
   <div id="app"></div>
 
-<script>
-let page = 'home';
-const app = document.getElementById('app');
+  <script>
+    let currentPage = 'home';
+    let currentLang = 'ar';
+    let currentRole = 'admin';
+    let mainChart = null;
+    let statsChart = null;
 
-const render = () => {
-  if(page === 'home') app.innerHTML = Home();
-  if(page === 'report') app.innerHTML = ReportForm();
-  if(page === 'pm') app.innerHTML = PMForm();
-  if(page === 'log') app.innerHTML = LogPage();
-  if(page === 'schedule') app.innerHTML = SchedulePage();
-  if(page === 'qr') app.innerHTML = QRPage();
-  if(page === 'defect') app.innerHTML = DefectForm();
-  if(page === 'ai') app.innerHTML = AIPage();
-  if(page === 'stats') { app.innerHTML = StatsPage(); initChart(); }
-  if(page === 'kb') app.innerHTML = KBPage();
-  if(page === 'reports') app.innerHTML = ReportsPage();
-  if(page === 'users') app.innerHTML = UsersPage();
-}
-
-// ===== الشاشة الرئيسية =====
-const Home = () => `
-<header class="flex justify-between items-center p-4 bg-[#1E293B] sticky top-0 z-50 border-b border-gray-800">
-  <div>👋 أهلاً: <b>محمد حسن</b> <br><span class="text-xs text-gray-400">(مدير / مهندس جودة)</span></div>
-  <div class="flex gap-2">
-    <button onclick="document.body.classList.toggle('bg-white')" class="px-2 py-1 bg-gray-800 rounded">🌙</button>
-    <button class="px-2 py-1 border border-gray-700 rounded text-xs font-bold">EN</button>
-    <select class="bg-gray-800 rounded p-1 text-xs border border-gray-700">
-      <option>مدير</option>
-      <option>مهندس</option>
-      <option>فني</option>
-    </select>
-  </div>
-</header>
-
-<div class="p-4 max-w-md mx-auto">
-  <h2 class="mb-2 text-base font-bold text-blue-400">📊 لوحة المتابعة</h2>
-  <div class="grid grid-cols-3 gap-2 mb-6">
-    ${Card('12','عيوب اليوم','text-blue-400')}
-    ${Card('5','PM متأخرة','text-red-400')}
-    ${Card('3','بلاغات مفتوحة','text-orange-400')}
-  </div>
-
-  <h2 class="mb-2 text-base font-bold text-blue-400 flex items-center gap-1">🛠️ قسم الصيانة والمهام</h2>
-  <div class="grid grid-cols-2 gap-3 mb-3">
-    ${Btn('🚨','تسجيل بلاغ','report')}
-    ${Btn('📝','تسجيل PM','pm')}
-    ${Btn('📋','سجل الصيانة','log')}
-    ${Btn('📅','الجدولة','schedule')}
-  </div>
-  ${Btn('📱','مسح QR الماكينات','qr',true)}
-
-  <h2 class="mt-6 mb-2 text-base font-bold text-blue-400 flex items-center gap-1">📦 قسم تحليل عيوب الإنتاج</h2>
-  <div class="grid grid-cols-2 gap-3 mb-3">
-    ${Btn('📸','تصوير عيب','defect')}
-    ${Btn('🤖','فحص AI','ai')}
-    ${Btn('📚','قاعدة المعرفة','kb')}
-    ${Btn('📊','الإحصائيات','stats')}
-  </div>
-  ${Btn('📄','تصدير التقارير','reports',true)}
-
-  <div class="mt-6">
-    ${Btn('👥','إدارة المستخدمين والصلاحيات (للمدير فقط)','users',true)}
-  </div>
-</div>
-<footer class="text-center p-4 text-gray-400 text-xs border-t border-gray-800 mt-6">
-  تواصل مع الدعم الفني والتطوير <br> © 2026 جميع الحقوق محفوظة | Mohamed Hassan
-</footer>
-`;
-
-const Card = (val, title, color) => `
-<div class="bg-[#1E293B] p-3 rounded-xl text-center border border-gray-800 shadow-sm">
-  <div class="text-2xl font-bold ${color}">${val}</div>
-  <div class="text-xs text-gray-400 mt-1">${title}</div>
-</div>`;
-
-const Btn = (icon, text, target, full=false) => `
-<button onclick="page='${target}'; render()"
-class="bg-[#1E293B] hover:bg-[#334155] active:scale-95 p-3 rounded-xl transition border border-gray-800 flex flex-col items-center justify-center gap-1 ${full?'w-full col-span-2':''}">
-  <div class="text-xl">${icon}</div>
-  <div class="text-xs font-bold text-gray-200">${text}</div>
-</button>`;
-
-// ===== الاستمارات =====
-const FormPage = (title, fields, successMsg) => `
-<div class="p-4 max-w-md mx-auto">
-  <button onclick="page='home'; render()" class="mb-4 bg-gray-800 px-3 py-1.5 rounded-lg text-sm font-bold">⬅️ رجوع للرئيسية</button>
-  <h2 class="text-lg font-bold mb-4 text-blue-400">${title}</h2>
-  <form onsubmit="alert('${successMsg}'); page='home'; render(); return false" class="space-y-4">
-    ${fields}
-    <button class="w-full p-3 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold text-sm transition">حفظ وإرسال ✅</button>
-  </form>
-</div>`;
-
-const ReportForm = () => FormPage('🚨 تسجيل بلاغ عطل جديد', `
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">المعدة / الماكينة</label>
-    <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm" required>
-      <option value="">اختر الماكينة...</option>
-      <option>ماكينة 2</option>
-      <option>خط الدهان 1</option>
-      <option>مكبس 4</option>
-    </select>
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">نوع العطل</label>
-    <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm">
-      <option>ميكانيكي</option>
-      <option>كهربائي</option>
-      <option>برمجي / كنترول</option>
-    </select>
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">وصف العطل</label>
-    <textarea placeholder="أدخل تفاصيل العطل والملاحظات..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm h-24" required></textarea>
-  </div>
-`, 'تم إرسال البلاغ بنجاح #1024 ✅');
-
-const PMForm = () => FormPage('📝 تسجيل صيانة وقائية (PM)', `
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">اسم الماكينة</label>
-    <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm">
-      <option>خط الدهان 1</option>
-      <option>ماكينة 2</option>
-    </select>
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-2">قائمة الفحص والتأكيد</label>
-    <div class="bg-[#1E293B] p-3 rounded-lg border border-gray-700 space-y-2 text-xs">
-      <label class="flex items-center gap-2"><input type="checkbox" required> فحص ضغط الهيدروليك</label>
-      <label class="flex items-center gap-2"><input type="checkbox" required> تنظيف الفلاتر ونظام التبريد</label>
-      <label class="flex items-center gap-2"><input type="checkbox" required> التشحيم والتزييت الدوري</label>
-    </div>
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">ملاحظات الفني</label>
-    <textarea placeholder="ملاحظات إضافية..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm h-20"></textarea>
-  </div>
-`, 'تم حفظ نموذج الصيانة الوقائية ✅');
-
-const DefectForm = () => FormPage('📸 تصوير وتسجيل عيب إنتاج', `
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">خط الإنتاج</label>
-    <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm"><option>خط 1</option><option>خط 2</option></select>
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">صورة العيب</label>
-    <input type="file" accept="image/*" capture="camera" class="w-full p-2 bg-[#1E293B] border border-gray-700 rounded-lg text-xs">
-  </div>
-  <div>
-    <label class="block text-xs font-bold text-gray-400 mb-1">ملاحظات العيب</label>
-    <textarea placeholder="وصف العيب الظاهري..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-sm h-20"></textarea>
-  </div>
-`, 'تم حفظ العيب وتحليله بنجاح ✅');
-
-// ===== الشاشات الفرعية =====
-const Page = (title, content) => `
-<div class="p-4 max-w-md mx-auto">
-  <button onclick="page='home'; render()" class="mb-4 bg-gray-800 px-3 py-1.5 rounded-lg text-sm font-bold">⬅️ رجوع للرئيسية</button>
-  <h2 class="text-lg font-bold mb-4 text-blue-400">${title}</h2>
-  ${content}
-</div>`;
-
-const LogPage = () => Page('📋 سجل الصيانة والبلاغات', `
-  <div class="overflow-x-auto rounded-xl border border-gray-800">
-    <table class="w-full text-xs text-right">
-      <tr class="bg-[#1E293B] text-gray-400 border-b border-gray-800"><th class="p-2.5">الكود</th><th class="p-2.5">المعدة</th><th class="p-2.5">الحالة</th></tr>
-      <tr class="border-b border-gray-800/50"><td class="p-2.5 font-mono">#1024</td><td class="p-2.5">ماكينة 2</td><td class="p-2.5 text-orange-400 font-bold">مفتوح 🟡</td></tr>
-      <tr class="border-b border-gray-800/50"><td class="p-2.5 font-mono">#1023</td><td class="p-2.5">خط الدهان 1</td><td class="p-2.5 text-green-400 font-bold">تم الإصلاح 🟢</td></tr>
-      <tr><td class="p-2.5 font-mono">#1022</td><td class="p-2.5">مكبس 4</td><td class="p-2.5 text-green-400 font-bold">تم الإصلاح 🟢</td></tr>
-    </table>
-  </div>
-`);
-
-const StatsPage = () => Page('📊 الإحصائيات وتحليل الأعطال', `
-  <div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800">
-    <div style="height: 200px;">
-      <canvas id="statsChart"></canvas>
-    </div>
-  </div>
-`);
-
-const initChart = () => {
-  setTimeout(() => {
-    const ctx = document.getElementById('statsChart');
-    if(!ctx) return;
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['خدش سطحي', 'فقاعات دهان', 'عدم استواء', 'كسر'],
-        datasets: [{
-          label: 'عدد الحالات',
-          data: [15, 8, 5, 2],
-          backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B', '#10B981'],
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#9CA3AF', font: { size: 10 } }, grid: { display: false } },
-          y: { ticks: { color: '#9CA3AF', font: { size: 10 } }, grid: { color: '#334155' } }
-        }
+    // إخفاء الـ Splash
+    setTimeout(() => {
+      const splash = document.getElementById('splash-screen');
+      if(splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.style.display = 'none', 500);
       }
-    });
-  }, 100);
-};
+    }, 1800);
 
-const SchedulePage = () => Page('📅 جدولة الصيانة', `<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center text-xs text-gray-400">📅 لا يوجد خطط صيانة متأخرة للأسبوع الحالي.</div>`);
-const QRPage = () => Page('📱 مسح QR الماكينات', `<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center"><p class="text-xs text-gray-400 mb-3">وجه الكاميرا نحو رمز QR الماكينة</p><input type="file" accept="image/*" capture="camera" class="w-full text-xs"></div>`);
-const AIPage = () => Page('🤖 فحص العيوب بـ AI', `<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center"><p class="text-xs text-gray-400 mb-3">ارفع صورة المنتجات لفحصها تلقائياً</p><input type="file" class="w-full text-xs mb-3"><button onclick="alert('جاري الفحص... العيب المكتشف: خدش دهان (دقة 94%)')" class="w-full p-2.5 bg-blue-600 rounded-lg font-bold text-xs">ابدأ الفحص 🚀</button></div>`);
-const KBPage = () => Page('📚 قاعدة المعرفة للحلول', `<input placeholder="🔍 ابحث عن العيب أو طريقة الإصلاح..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs mb-3">`);
-const ReportsPage = () => Page('📄 تصدير التقارير', `<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert('تم تصدير ملف Excel بنجاح!')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs">تصدير سجلات الصيانة (Excel) 📊</button></div>`);
-const UsersPage = () => Page('👥 إدارة المستخدمين والصلاحيات', `<div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2"><div class="flex justify-between items-center border-b border-gray-700 pb-2"><span>محمد حسن (مدير)</span><span class="text-blue-400">Admin</span></div><div class="flex justify-between items-center"><span>أحمد علي (فني)</span><span class="text-gray-400">Technician</span></div></div>`);
+    const translations = {
+      ar: {
+        dir: 'rtl', langBtn: 'EN', welcome: 'أهلاً:', today: 'اليوم',
+        dashTitle: '📊 لوحة المتابعة', openTickets: 'بلاغات مفتوحة', pmLate: 'PM متأخرة', todayDefects: 'عيوب اليوم',
+        secMaint: '🛠️ قسم الصيانة والمهام',
+        m1: 'تسجيل بلاغ', m2: 'تسجيل PM', m3: 'سجل الصيانة', m4: 'الجدولة', m5: 'مسح QR الماكينات',
+        secDefects: '📦 قسم تحليل عيوب الإنتاج',
+        d1: 'تصوير عيب', d2: 'فحص AI', d3: 'قاعدة المعرفة', d4: 'الإحصائيات', d5: 'تصدير التقارير',
+        secUsers: '👥 إدارة المستخدمين', u1: 'إدارة الصلاحيات والمستخدمين (للمدير فقط)',
+        contact: 'تواصل مع الدعم الفني والتطوير', logout: 'تسجيل الخروج ➔', copy: '© 2026 جميع الحقوق محفوظة | Mohamed Hassan',
+        chartLabel: 'أكثر الماكينات أعطالاً'
+      },
+      en: {
+        dir: 'ltr', langBtn: 'عربي', welcome: 'Welcome:', today: 'Today',
+        dashTitle: '📊 Dashboard Overview', openTickets: 'Open Tickets', pmLate: 'Overdue PM', todayDefects: 'Today Defects',
+        secMaint: '🛠️ Maintenance & Tasks',
+        m1: 'New Ticket', m2: 'Record PM', m3: 'Maint. Log', m4: 'Schedule', m5: 'Scan Machine QR',
+        secDefects: '📦 Defects Analysis',
+        d1: 'Capture Defect', d2: 'AI Inspect', d3: 'Knowledge Base', d4: 'Statistics', d5: 'Export Reports',
+        secUsers: '👥 Users Management', u1: 'Manage Roles & Users (Admin Only)',
+        contact: 'Contact Technical Support', logout: 'Logout ➔', copy: '© 2026 All Rights Reserved | Mohamed Hussein',
+        chartLabel: 'Top Faulty Machines'
+      }
+    };
 
-render();
-</script>
+    const navigateTo = (page) => {
+      currentPage = page;
+      render();
+      window.scrollTo(0,0);
+    };
+
+    const toggleLanguage = () => {
+      currentLang = currentLang === 'ar' ? 'en' : 'ar';
+      document.getElementById('html-tag').dir = translations[currentLang].dir;
+      render();
+    };
+
+    const toggleDarkMode = () => {
+      document.body.classList.toggle('light-mode');
+      if(currentPage === 'home') initMainChart();
+      if(currentPage === 'stats') initStatsChart();
+    };
+
+    const changeRole = (role) => {
+      currentRole = role;
+      render();
+    };
+
+    // ===== الـ Render الرئيسي للموجه =====
+    const render = () => {
+      const app = document.getElementById('app');
+      if (currentPage === 'home') {
+        app.innerHTML = HomeView();
+        initMainChart();
+      } else if (currentPage === 'report') {
+        app.innerHTML = FormPage('🚨 تسجيل بلاغ عطل جديد', ReportFormFields(), 'تم إرسال البلاغ بنجاح #1024 ✅');
+      } else if (currentPage === 'pm') {
+        app.innerHTML = FormPage('📝 تسجيل صيانة وقائية (PM)', PMFormFields(), 'تم حفظ نموذج PM بنجاح ✅');
+      } else if (currentPage === 'defect') {
+        app.innerHTML = FormPage('📸 تصوير وتسجيل عيب إنتاج', DefectFormFields(), 'تم حفظ العيب وتحليله بنجاح ✅');
+      } else if (currentPage === 'log') {
+        app.innerHTML = PageView('📋 سجل الصيانة والبلاغات', LogContent());
+      } else if (currentPage === 'schedule') {
+        app.innerHTML = PageView('📅 جدولة الصيانة', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center text-xs text-gray-400">📅 لا يوجد خطط صيانة متأخرة للأسبوع الحالي.</div>');
+      } else if (currentPage === 'qr') {
+        app.innerHTML = PageView('📱 مسح QR الماكينات', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center"><p class="text-xs text-gray-400 mb-3">وجه الكاميرا نحو رمز QR الماكينة</p><input type="file" accept="image/*" capture="camera" class="w-full text-xs"></div>');
+      } else if (currentPage === 'ai') {
+        app.innerHTML = PageView('🤖 فحص العيوب بـ AI', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center"><p class="text-xs text-gray-400 mb-3">ارفع صورة المنتجات لفحصها تلقائياً</p><input type="file" class="w-full text-xs mb-3"><button onclick="alert(\'جاري الفحص... العيب المكتشف: خدش دهان (دقة 94%)\')" class="w-full p-2.5 bg-blue-600 rounded-lg font-bold text-xs text-white">ابدأ الفحص 🚀</button></div>');
+      } else if (currentPage === 'stats') {
+        app.innerHTML = PageView('📊 الإحصائيات وتحليل الأعطال', '<div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800"><div style="height: 220px;"><canvas id="statsChart"></canvas></div></div>');
+        initStatsChart();
+      } else if (currentPage === 'kb') {
+        app.innerHTML = PageView('📚 قاعدة المعرفة للحلول', '<input placeholder="🔍 ابحث عن العيب أو طريقة الإصلاح..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs mb-3 text-white">');
+      } else if (currentPage === 'reports') {
+        app.innerHTML = PageView('📄 تصدير التقارير', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert(\'تم تصدير ملف Excel بنجاح!\')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs text-white">تصدير سجلات الصيانة (Excel) 📊</button></div>');
+      } else if (currentPage === 'users') {
+        app.innerHTML = PageView('👥 إدارة المستخدمين والصلاحيات', '<div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2"><div class="flex justify-between items-center border-b border-gray-700 pb-2"><span>محمد حسن (مدير)</span><span class="text-blue-400">Admin</span></div><div class="flex justify-between items-center"><span>أحمد علي (فني)</span><span class="text-gray-400">Technician</span></div></div>');
+      }
+    };
+
+    // ===== الشاشة الرئيسية (Home View) =====
+    const HomeView = () => {
+      const t = translations[currentLang];
+      const roleName = currentRole === 'admin' ? (currentLang==='ar'?'(مدير)':'(Admin)') : currentRole === 'engineer' ? (currentLang==='ar'?'(مهندس)':'(Engineer)') : (currentLang==='ar'?'(فني)':'(Tech)');
+
+      return `
+      <div class="app-header">
+        <div class="text-xs font-bold">
+          👋 ${t.welcome} <span>محمد حسن</span> 
+          <span class="font-normal opacity-70">${roleName}</span>
+        </div>
+        <div class="flex gap-1.5 items-center">
+          <select class="btn-icon" onchange="changeRole(this.value)">
+            <option value="admin" ${currentRole==='admin'?'selected':''}>👨‍💼 ${currentLang==='ar'?'مدير':'Admin'}</option>
+            <option value="engineer" ${currentRole==='engineer'?'selected':''}>👷‍♂️ ${currentLang==='ar'?'مهندس':'Eng'}</option>
+            <option value="tech" ${currentRole==='tech'?'selected':''}>🔧 ${currentLang==='ar'?'فني':'Tech'}</option>
+          </select>
+          <button class="btn-icon" onclick="toggleLanguage()">${t.langBtn}</button>
+          <button class="btn-icon" onclick="toggleDarkMode()">🌙</button>
+        </div>
+      </div>
+
+      <div class="p-4 max-w-md mx-auto">
+        <!-- Dashboard Card -->
+        <div class="dashboard-card">
+          <div class="flex justify-between items-center text-xs font-bold mb-3">
+            <span>${t.dashTitle}</span>
+            <span class="opacity-60">${t.today}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center mb-3">
+            <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
+              <div class="text-lg font-bold text-orange-500">3</div>
+              <div class="text-[10px] opacity-70">${t.openTickets}</div>
+            </div>
+            <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
+              <div class="text-lg font-bold text-red-500">5</div>
+              <div class="text-[10px] opacity-70">${t.pmLate}</div>
+            </div>
+            <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
+              <div class="text-lg font-bold text-blue-500">12</div>
+              <div class="text-[10px] opacity-70">${t.todayDefects}</div>
+            </div>
+          </div>
+          <div style="height: 130px;">
+            <canvas id="chartMachines"></canvas>
+          </div>
+        </div>
+
+        <!-- قسم الصيانة -->
+        <div class="text-xs font-bold text-blue-400 mb-2">${t.secMaint}</div>
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
+          ${ActionBtn('🚨', t.m1, 'report')}
+          ${ActionBtn('📝', t.m2, 'pm')}
+          ${ActionBtn('📋', t.m3, 'log')}
+          ${ActionBtn('🗓️', t.m4, 'schedule')}
+          <div class="col-span-2">${ActionBtn('📱', t.m5, 'qr')}</div>
+        </div>
+
+        <!-- قسم العيوب -->
+        <div class="text-xs font-bold text-blue-400 mb-2">${t.secDefects}</div>
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
+          ${ActionBtn('📷', t.d1, 'defect')}
+          ${ActionBtn('🤖', t.d2, 'ai')}
+          ${ActionBtn('📚', t.d3, 'kb')}
+          ${ActionBtn('📊', t.d4, 'stats')}
+          <div class="col-span-2">${ActionBtn('📄', t.d5, 'reports')}</div>
+        </div>
+
+        <!-- قسم الإدارة (للمدير فقط) -->
+        ${currentRole === 'admin' ? `
+          <div class="text-xs font-bold text-blue-400 mb-2">${t.secUsers}</div>
+          ${ActionBtn('⚙️', t.u1, 'users')}
+        ` : ''}
+      </div>
+
+      <footer class="text-center p-4 text-[11px] opacity-60 border-t border-gray-800 mt-6">
+        <div>${t.contact}</div>
+        <button class="text-red-400 border-none bg-none cursor-pointer font-bold my-1" onclick="alert('تم تسجيل الخروج')">${t.logout}</button>
+        <div>${t.copy}</div>
+      </footer>
+      `;
+    };
+
+    const ActionBtn = (icon, text, target) => `
+      <div class="btn-action" onclick="navigateTo('${target}')">
+        <span class="text-xl">${icon}</span>
+        <span class="text-xs font-bold">${text}</span>
+      </div>
+    `;
+
+    // ===== الصفحات والفرعيات (Sub-views) =====
+    const PageView = (title, content) => `
+      <div class="p-4 max-w-md mx-auto">
+        <button onclick="navigateTo('home')" class="mb-4 bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">⬅️ ${currentLang==='ar'?'رجوع للرئيسية':'Back Home'}</button>
+        <h2 class="text-base font-bold mb-4 text-blue-400">${title}</h2>
+        ${content}
+      </div>
+    `;
+
+    const FormPage = (title, fields, successMsg) => PageView(title, `
+      <form onsubmit="alert('${successMsg}'); navigateTo('home'); return false;" class="space-y-4">
+        ${fields}
+        <button type="submit" class="w-full p-3 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold text-xs text-white transition">حفظ وإرسال ✅</button>
+      </form>
+    `);
+
+    // نماذج الإدخال
+    const ReportFormFields = () => `
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">المعدة / الماكينة</label>
+        <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white" required>
+          <option value="">اختر الماكينة...</option>
+          <option>ماكينة 2</option>
+          <option>خط الدهان 1</option>
+          <option>مكبس 4</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">نوع العطل</label>
+        <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white">
+          <option>ميكانيكي</option>
+          <option>كهربائي</option>
+          <option>برمجي / كنترول</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">وصف العطل</label>
+        <textarea placeholder="أدخل تفاصيل العطل والملاحظات..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white h-24" required></textarea>
+      </div>
+    `;
+
+    const PMFormFields = () => `
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">اسم الماكينة</label>
+        <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white">
+          <option>خط الدهان 1</option>
+          <option>ماكينة 2</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold mb-2 opacity-70">قائمة الفحص والتأكيد</label>
+        <div class="bg-[#1E293B] p-3 rounded-lg border border-gray-700 space-y-2 text-xs">
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" required> فحص ضغط الهيدروليك</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" required> تنظيف الفلاتر ونظام التبريد</label>
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" required> التشحيم والتزييت الدوري</label>
+        </div>
+      </div>
+    `;
+
+    const DefectFormFields = () => `
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">خط الإنتاج</label>
+        <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white"><option>خط 1</option><option>خط 2</option></select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold mb-1 opacity-70">صورة العيب</label>
+        <input type="file" accept="image/*" capture="camera" class="w-full p-2 bg-[#1E293B] border border-gray-700 rounded-lg text-xs text-white">
+      </div>
+    `;
+
+    const LogContent = () => `
+      <div class="overflow-x-auto rounded-xl border border-gray-800">
+        <table class="w-full text-xs text-right">
+          <tr class="bg-[#1E293B] opacity-70 border-b border-gray-800"><th class="p-2.5">الكود</th><th class="p-2.5">المعدة</th><th class="p-2.5">الحالة</th></tr>
+          <tr class="border-b border-gray-800/50"><td class="p-2.5 font-mono">#1024</td><td class="p-2.5">ماكينة 2</td><td class="p-2.5 text-orange-400 font-bold">مفتوح 🟡</td></tr>
+          <tr class="border-b border-gray-800/50"><td class="p-2.5 font-mono">#1023</td><td class="p-2.5">خط الدهان 1</td><td class="p-2.5 text-green-400 font-bold">تم الإصلاح 🟢</td></tr>
+        </table>
+      </div>
+    `;
+
+    // ===== الرسوم البيانية Charts =====
+    const initMainChart = () => {
+      setTimeout(() => {
+        const ctx = document.getElementById('chartMachines');
+        if(!ctx) return;
+        if(mainChart) mainChart.destroy();
+        const t = translations[currentLang];
+        
+        mainChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: currentLang==='ar'? ['ماكينة 2', 'خط الدهان 1', 'مكبس 4'] : ['Machine 2', 'Coating Line 1', 'Press 4'],
+            datasets: [{
+              label: t.chartLabel,
+              data: [8, 5, 4],
+              backgroundColor: ['#EA580C', '#1E40AF', '#4B5563'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#9CA3AF', font: { size: 9 } }, grid: { display: false } },
+              y: { ticks: { color: '#9CA3AF', font: { size: 9 }, precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+      }, 50);
+    };
+
+    const initStatsChart = () => {
+      setTimeout(() => {
+        const ctx = document.getElementById('statsChart');
+        if(!ctx) return;
+        if(statsChart) statsChart.destroy();
+
+        statsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['خدش سطحي', 'فقاعات دهان', 'عدم استواء', 'كسر'],
+            datasets: [{
+              data: [15, 8, 5, 2],
+              backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B', '#10B981'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#9CA3AF', font: { size: 10 } }, grid: { display: false } },
+              y: { ticks: { color: '#9CA3AF', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+      }, 50);
+    };
+
+    // البدء
+    window.onload = () => { render(); };
+  </script>
 </body>
 </html>
