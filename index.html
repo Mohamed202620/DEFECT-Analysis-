@@ -563,41 +563,41 @@
       document.getElementById('cameraInput').value = '';
     }
 
-    
-  </script>
-async function saveDefectData() {
-  const line = document.getElementById('lineSelect').value;
-  const name = document.getElementById('defectName').value.trim();
-  const location = document.getElementById('defectLocation').value.trim();
-  const description = document.getElementById('defectDesc').value.trim();
+    async function saveDefectData() {
+      const line = document.getElementById('lineSelect').value;
+      const name = document.getElementById('defectName').value.trim();
+      const location = document.getElementById('defectLocation').value.trim();
+      const description = document.getElementById('defectDesc').value.trim();
 
-  if (!defectImageData) { alert('⚠️ حط صورة'); return; }
-  if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
+      if (!defectImageData) { alert('⚠️ حط صورة'); return; }
+      if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
 
-  const payload = {
-    action: "saveDefect",
-    user: { name: "محمد حسن", phone: "01000000", job: "فني", role: "tech" },
-    line: line, name: name, location: location, description: description,
-    image: defectImageData, date: new Date().toLocaleString('ar-EG')
-  };
+      const payload = {
+        action: "saveDefect",
+        user: { name: "محمد حسن", phone: "01000000", job: "فني", role: "tech" },
+        line: line, name: name, location: location, description: description,
+        image: defectImageData, date: new Date().toLocaleString('ar-EG')
+      };
 
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {https://script.google.com/macros/s/AKfycbxfNjFMzulaFF_GHQAfwgDfiuF-1dvuzOQ6kpwX67XKiw_gCuOdk9pauqO8HKoUvekoqg/exec
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json();
-    if (result.status === 'success') {
-      alert('✅ تم الحفظ بنجاح');
-      navigateTo('home');
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert('✅ تم الحفظ بنجاح');
+          navigateTo('home');
+        } else {
+          alert('❌ حدث خطأ أثناء الحفظ: ' + (result.message || 'خطأ غير معروف'));
+        }
+      } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+      }
     }
-  } catch (error) {
-    alert('❌ خطأ: ' + error.message);
-  }
-}
-  <!-- تسجيل الـ Service Worker الخارجي بشكل صحيح -->
-  <script>
+
+    // تسجيل الـ Service Worker الخارجي بشكل صحيح
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
