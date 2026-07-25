@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام تحليل العيوب والصيانة</title>
+  <title>نظام الجودة والصيانة</title>
   <link rel="manifest" href="manifest.json">
   
-  <!-- مكتبات TensorFlow.js و Teachable Machine للذكاء الاصطناعي -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
@@ -39,18 +38,25 @@
 
     .container { padding: 16px; max-width: 480px; margin: auto; flex: 1; width: 100%; }
     
+    /* عنوان القسم الرئيسي */
+    .section-divider {
+      font-size: 1.1rem; font-weight: bold; color: #1e3a8a;
+      margin: 15px 0 10px 0; padding-bottom: 5px;
+      border-bottom: 2px solid #cbd5e1; display: flex; align-items: center; gap: 8px;
+    }
+
     .menu-card {
-      background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px;
-      display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
-      transition: transform 0.1s ease;
+      background: white; border-radius: 14px; padding: 14px; margin-bottom: 10px;
+      display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer;
+      transition: transform 0.1s ease; border: 1px solid #f1f5f9;
     }
     .menu-card:active { transform: scale(0.98); }
     .menu-icon { 
-      font-size: 22px; margin-inline-end: 15px; width: 48px; height: 48px; 
+      font-size: 20px; margin-inline-end: 12px; width: 44px; height: 44px; 
       border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
     }
-    .menu-title { font-weight: bold; font-size: 1.05rem; color: #1e293b; }
-    .menu-sub { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
+    .menu-title { font-weight: bold; font-size: 1rem; color: #1e293b; }
+    .menu-sub { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
 
     .screen { display: none; }
     .screen.active { display: block; }
@@ -61,67 +67,103 @@
     }
 
     .form-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-    .form-group { margin-bottom: 18px; }
-    label { display: block; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: bold; margin-bottom: 6px; color: #1e293b; font-size: 0.9rem; }
     
     input[type="text"], input[type="tel"], input[type="date"], select, textarea { 
-      width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background-color: #fff;
+      width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; background-color: #fff;
     }
 
     .photo-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
     .btn-photo {
       flex: 1; padding: 10px; border: 1px solid #2563eb; background: #eff6ff;
-      color: #2563eb; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center;
+      color: #2563eb; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.85rem;
     }
     #image-preview, #maint-image-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; }
 
     .btn-submit { 
-      width: 100%; background: #2563eb; color: white; border: none; padding: 14px; 
-      border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;
+      width: 100%; background: #2563eb; color: white; border: none; padding: 12px; 
+      border-radius: 8px; font-weight: bold; font-size: 0.95rem; cursor: pointer; margin-top: 10px;
     }
     .btn-whatsapp { background: #25D366 !important; margin-top: 10px; }
 
-    /* كروت قاعدة المعرفة */
-    .defect-item {
-      background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px;
+    /* كروت القوائم والسجلات */
+    .defect-item, .maint-item {
+      background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center;
     }
-    .defect-item img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: #e2e8f0; }
+    .defect-item img, .maint-item img { width: 65px; height: 65px; border-radius: 8px; object-fit: cover; background: #e2e8f0; }
 
-    /* الإحصائيات */
     .stat-box {
       background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: center;
     }
     .stat-number { font-size: 2rem; font-weight: bold; color: #2563eb; }
 
-    /* Footer Style */
     footer {
       text-align: center; padding: 15px 10px; margin-top: auto;
       border-top: 1px solid #e2e8f0; background-color: #ffffff;
-      font-size: 13px; color: #64748b;
+      font-size: 12px; color: #64748b;
     }
   </style>
 </head>
 <body>
 
-  <!-- شاشة الترحيب -->
+  <!-- شاشة التحميل -->
   <div id="splash-screen">
-    <div style="font-size: 56px;">📊</div>
-    <h2 id="splash-title">نظام تحليل العيوب</h2>
-    <p>DEFECT Analysis System</p>
+    <div style="font-size: 56px;">⚙️</div>
+    <h2 id="splash-title">نظام الجودة والصيانة</h2>
+    <p>Quality & Maintenance System</p>
     <div class="loader"></div>
   </div>
 
-  <!-- الشاشة الرئيسية -->
+  <!-- الشاشة الرئيسية المقسمة لـ 2 قسم رئيسي -->
   <div id="home-screen" class="screen active">
     <div class="app-header">
-      <span id="app-title-1">تحليل العيوب</span>
+      <span id="app-title-1">الرئيسية</span>
       <button class="lang-btn" onclick="toggleLanguage()">EN</button>
     </div>
     <div class="container">
-      
-      <!-- 1. تصوير عيب جديد -->
+
+      <!-- ================= 1. قسم الصيانة ================= -->
+      <div class="section-divider" id="sec-maint-title">
+        🛠️ قسم الصيانة والمهام
+      </div>
+
+      <!-- 1.1 تسجيل بلاغ صيانة جديد -->
+      <div class="menu-card" onclick="openScreen('maint-screen')">
+        <div class="menu-icon" style="background: #0284c7;">🚨</div>
+        <div>
+          <div class="menu-title" id="m-maint1-title">تسجيل بلاغ عطل / مهمة</div>
+          <div class="menu-sub" id="m-maint1-sub">إرسال بلاغ صيانة مباشر وإخطار المهندس</div>
+        </div>
+      </div>
+
+      <!-- 1.2 سجل بلاغات الصيانة -->
+      <div class="menu-card" onclick="loadMaintenanceLog()">
+        <div class="menu-icon" style="background: #0d9488;">📋</div>
+        <div>
+          <div class="menu-title" id="m-maint2-title">سجل بلاغات الصيانة</div>
+          <div class="menu-sub" id="m-maint2-sub">عرض ومتابعة كافة بلاغات الصيانة السابقة</div>
+        </div>
+      </div>
+
+      <!-- 1.3 الصيانة الوقائية والخطة -->
+      <div class="menu-card" onclick="openPreventiveMaint()">
+        <div class="menu-icon" style="background: #4f46e5;">🗓️</div>
+        <div>
+          <div class="menu-title" id="m-maint3-title">الصيانة الوقائية والجدولة</div>
+          <div class="menu-sub" id="m-maint3-sub">جدول الفحص الدوري للمعدات والخطوط</div>
+        </div>
+      </div>
+
+
+      <!-- ================= 2. قسم تحليل عيوب العلب ================= -->
+      <div class="section-divider" style="margin-top:25px;" id="sec-defects-title">
+        📦 قسم تحليل عيوب العلب
+      </div>
+
+      <!-- 2.1 تصوير عيب جديد -->
       <div class="menu-card" onclick="openScreen('form-screen')">
         <div class="menu-icon" style="background: #2563eb;">📷</div>
         <div>
@@ -130,55 +172,127 @@
         </div>
       </div>
 
-      <!-- 2. اكتشاف عيب -->
+      <!-- 2.2 اكتشاف عيب بالذكاء الاصطناعي -->
       <div class="menu-card" onclick="openScreen('detect-screen')">
         <div class="menu-icon" style="background: #16a34a;">🔍</div>
         <div>
-          <div class="menu-title" id="m2-title">اكتشاف عيب</div>
-          <div class="menu-sub" id="m2-sub">تصوير العيب وتحليله بالذكاء الاصطناعي</div>
+          <div class="menu-title" id="m2-title">اكتشاف عيب بالذكاء الاصطناعي</div>
+          <div class="menu-sub" id="m2-sub">تصوير العيب وتحليله فوراً بواسطة AI</div>
         </div>
       </div>
 
-      <!-- 3. الصيانة والمهام (New Feature Added) -->
-      <div class="menu-card" onclick="openScreen('maint-screen')">
-        <div class="menu-icon" style="background: #0284c7;">🛠️</div>
-        <div>
-          <div class="menu-title">الصيانة والمهام</div>
-          <div class="menu-sub">تسجيل بلاغات الأعطال وإرسالها للمهندس</div>
-        </div>
-      </div>
-
-      <!-- 4. قاعدة المعرفة -->
+      <!-- 2.3 قاعدة معرفة العيوب -->
       <div class="menu-card" onclick="loadKnowledgeBase()">
         <div class="menu-icon" style="background: #ea580c;">📚</div>
         <div>
-          <div class="menu-title" id="m3-title">قاعدة المعرفة</div>
-          <div class="menu-sub" id="m3-sub">عرض جميع العيوب والحلول</div>
+          <div class="menu-title" id="m3-title">قاعدة معرفة العيوب</div>
+          <div class="menu-sub" id="m3-sub">عرض كافة عيوب العلب المسجلة والحلول</div>
         </div>
       </div>
 
-      <!-- 5. الإحصائيات -->
+      <!-- 2.4 إحصائيات العيوب -->
       <div class="menu-card" onclick="loadStats()">
         <div class="menu-icon" style="background: #9333ea;">📊</div>
         <div>
-          <div class="menu-title" id="m4-title">الإحصائيات</div>
-          <div class="menu-sub" id="m4-sub">إحصائيات خطوط الإنتاج والعيوب</div>
+          <div class="menu-title" id="m4-title">إحصائيات العيوب</div>
+          <div class="menu-sub" id="m4-sub">إحصائيات خطوط الإنتاج ونسب العيوب</div>
         </div>
       </div>
 
-      <!-- 6. اقتراح أو ملاحظة -->
+      <!-- 2.5 اقتراحات وتواصل -->
       <div class="menu-card" onclick="openSuggestions()">
         <div class="menu-icon" style="background: #eab308;">💡</div>
         <div>
           <div class="menu-title" id="m5-title">إرسال اقتراح أو ملاحظة</div>
-          <div class="menu-sub" id="m5-sub">تواصل مباشر مع المطور (محمد حسن)</div>
+          <div class="menu-sub" id="m5-sub">تواصل مباشر مع المطور (Mohamed Hassan)</div>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- 1. شاشة إضافة عيب -->
+  <!-- [1] شاشة تسجيل بلاغ صيانة -->
+  <div id="maint-screen" class="screen">
+    <div class="app-header">
+      <span id="app-title-maint">تسجيل بلاغ صيانة</span>
+      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
+    </div>
+    <div class="container">
+      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
+      
+      <div class="form-card">
+        <div class="form-group">
+          <label id="lbl-maint-device">المعدة / خط الإنتاج:</label>
+          <input type="text" id="maint-device" placeholder="مثال: خط الدهان 2 / ماكينة 5">
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-type">نوع العيب / المشكلة:</label>
+          <select id="maint-issue-type">
+            <option value="صيانة ميكانيكية" id="opt-maint-mech">صيانة ميكانيكية</option>
+            <option value="صيانة كهربائية" id="opt-maint-elec">صيانة كهربائية</option>
+            <option value="عيب جودة خامات" id="opt-maint-raw">عيب جودة خامات</option>
+            <option value="أخرى" id="opt-maint-other">أخرى</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-priority">درجة الأولوية:</label>
+          <select id="maint-priority">
+            <option value="عالية 🔴" id="opt-prio-high">عالية 🔴</option>
+            <option value="متوسطة 🟡" id="opt-prio-med">متوسطة 🟡</option>
+            <option value="منخفضة 🟢" id="opt-prio-low">منخفضة 🟢</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-assign">مسندة إلى (الفني / المهندس):</label>
+          <input type="text" id="maint-assigned" placeholder="اسم المهندس المسؤول">
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-phone">رقم واتساب المهندس (للتنبيه المباشر):</label>
+          <input type="tel" id="maint-phone" placeholder="مثال: 201000000000">
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-date">الموعد النهائي لتنفيذ المهمة:</label>
+          <input type="date" id="maint-due-date">
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-photo">صورة العطل (اختياري):</label>
+          <div class="photo-buttons">
+            <label class="btn-photo">📷 <span class="btn-cam-txt">الكاميرا</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleMaintImage(this)"></label>
+            <label class="btn-photo">🖼️ <span class="btn-gallery-txt">المعرض</span><input type="file" accept="image/*" style="display:none" onchange="handleMaintImage(this)"></label>
+          </div>
+          <img id="maint-image-preview" alt="معاينة صيانة">
+        </div>
+
+        <div class="form-group">
+          <label id="lbl-maint-notes">وصف المشكلة / القطع المطلوبة:</label>
+          <textarea id="maint-notes" rows="2" placeholder="تفاصيل العطل..."></textarea>
+        </div>
+
+        <button class="btn-submit" id="btn-save-maint" onclick="submitMaintenanceIssue()">حفظ وتسجيل المهمة</button>
+        <button id="whatsapp-maint-btn" class="btn-submit btn-whatsapp" style="display:none;" onclick="sendWhatsAppNotification()">📲 إرسال تنبيه عبر واتساب للمهندس</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- [2] شاشة سجل بلاغات الصيانة -->
+  <div id="maint-log-screen" class="screen">
+    <div class="app-header">
+      <span id="app-title-maint-log">سجل بلاغات الصيانة</span>
+      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
+    </div>
+    <div class="container">
+      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
+      <div id="maint-log-list"></div>
+    </div>
+  </div>
+
+  <!-- [3] شاشة إضافة عيب علبة -->
   <div id="form-screen" class="screen">
     <div class="app-header">
       <span id="app-title-2">إضافة تحليل العيب</span>
@@ -206,14 +320,8 @@
         <div class="form-group">
           <label id="lbl-photo">صورة العيب:</label>
           <div class="photo-buttons">
-            <label class="btn-photo">
-              📷 <span class="btn-cam-txt">الكاميرا</span>
-              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)">
-            </label>
-            <label class="btn-photo">
-              🖼️ <span class="btn-gallery-txt">المعرض</span>
-              <input type="file" accept="image/*" style="display:none" onchange="handleImage(this)">
-            </label>
+            <label class="btn-photo">📷 <span class="btn-cam-txt">الكاميرا</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleImage(this)"></label>
+            <label class="btn-photo">🖼️ <span class="btn-gallery-txt">المعرض</span><input type="file" accept="image/*" style="display:none" onchange="handleImage(this)"></label>
           </div>
           <img id="image-preview" alt="معاينة الصورة">
         </div>
@@ -228,7 +336,7 @@
     </div>
   </div>
 
-  <!-- 2. شاشة اكتشاف العيب (AI) -->
+  <!-- [4] شاشة اكتشاف العيب (AI) -->
   <div id="detect-screen" class="screen">
     <div class="app-header">
       <span id="app-title-ai">اكتشاف عيب بالذكاء الاصطناعي</span>
@@ -238,11 +346,11 @@
       <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
       <div class="form-card" style="text-align: center;">
         <h3 id="txt-ai-box-title">التقط صورة للتحليل الفوري</h3>
-        <p style="color: #64748b; font-size: 0.9rem;" id="txt-ai-box-desc">سيقوم النظام بالتعرف على نوع العيب تلقائياً</p>
+        <p style="color: #64748b; font-size: 0.85rem;" id="txt-ai-box-desc">سيقوم النظام بالتعرف على نوع العيب تلقائياً</p>
         
         <img id="image-preview-ai" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none;" alt="معاينة الفحص">
 
-        <label class="btn-submit" style="display: inline-block; width: auto; padding: 12px 25px; margin-top: 15px; cursor: pointer;">
+        <label class="btn-submit" style="display: inline-block; width: auto; padding: 10px 20px; margin-top: 15px; cursor: pointer;">
           📷 <span id="btn-capture-txt">التقاط صورة الآن</span>
           <input type="file" accept="image/*" capture="environment" style="display:none" onchange="simulateAI(this)">
         </label>
@@ -256,96 +364,12 @@
           <h4 style="color: #166534; margin-top: 0;" id="txt-ai-result-title">نتيجة التحليل:</h4>
           <p><strong id="txt-ai-exp">العيب المتوقع:</strong> <span id="ai-defect-type">تشوه حافة (Rim Dent)</span></p>
           <p><strong id="txt-ai-acc">نسبة الدقة:</strong> <span id="ai-defect-acc" style="color:#16a34a; font-weight:bold;">94.2%</span></p>
-          
-          <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 15px 0;">
-
-          <div style="background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
-            <p style="margin: 0 0 8px 0; font-size: 0.85rem; color: #475569; font-weight: bold;" id="txt-train-title">🧠 هل اكتشف النظام العيب بشكل خاطئ؟</p>
-            <button onclick="trainNewDefect()" style="background: #475569; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;" id="btn-train">
-              ➕ إضافة هذه الصورة لتدريب الذكاء الاصطناعي
-            </button>
-          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 🛠️ شاشة بلاغات الصيانة والمهام المضافة حديثاً -->
-  <div id="maint-screen" class="screen">
-    <div class="app-header">
-      <span>بلاغات الصيانة والمهام</span>
-      <button class="lang-btn" onclick="toggleLanguage()">EN</button>
-    </div>
-    <div class="container">
-      <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
-      
-      <div class="form-card">
-        <div class="form-group">
-          <label>المعدة / خط الإنتاج:</label>
-          <input type="text" id="maint-device" placeholder="مثال: خط الدهان 2 / ماكينة 5">
-        </div>
-
-        <div class="form-group">
-          <label>نوع العيب / المشكلة:</label>
-          <select id="maint-issue-type">
-            <option value="صيانة ميكانيكية">صيانة ميكانيكية</option>
-            <option value="صيانة كهربائية">صيانة كهربائية</option>
-            <option value="عيب جودة خامات">عيب جودة خامات</option>
-            <option value="أخرى">أخرى</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>درجة الأولوية:</label>
-          <select id="maint-priority">
-            <option value="عالية 🔴">عالية 🔴</option>
-            <option value="متوسطة 🟡">متوسطة 🟡</option>
-            <option value="منخفضة 🟢">منخفضة 🟢</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>مسندة إلى (الفني / المهندس):</label>
-          <input type="text" id="maint-assigned" placeholder="اسم المهندس المسؤول">
-        </div>
-
-        <div class="form-group">
-          <label>رقم واتساب المهندس (للتنبيه المباشر):</label>
-          <input type="tel" id="maint-phone" placeholder="مثال: 201000000000">
-        </div>
-
-        <div class="form-group">
-          <label>الموعد النهائي لتنفيذ المهمة:</label>
-          <input type="date" id="maint-due-date">
-        </div>
-
-        <div class="form-group">
-          <label>صورة العطل (اختياري):</label>
-          <div class="photo-buttons">
-            <label class="btn-photo">
-              📷 الكاميرا
-              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleMaintImage(this)">
-            </label>
-            <label class="btn-photo">
-              🖼️ المعرض
-              <input type="file" accept="image/*" style="display:none" onchange="handleMaintImage(this)">
-            </label>
-          </div>
-          <img id="maint-image-preview" alt="معاينة صيانة">
-        </div>
-
-        <div class="form-group">
-          <label>وصف المشكلة / القطع المطلوبة:</label>
-          <textarea id="maint-notes" rows="2" placeholder="تفاصيل العطل والقطع المطلوبة..."></textarea>
-        </div>
-
-        <button class="btn-submit" onclick="submitMaintenanceIssue()">حفظ وتسجيل المهمة</button>
-        <button id="whatsapp-maint-btn" class="btn-submit btn-whatsapp" style="display:none;" onclick="sendWhatsAppNotification()">📲 إرسال تنبيه عبر واتساب للمهندس</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. شاشة قاعدة المعرفة -->
+  <!-- [5] شاشة قاعدة معرفة العيوب -->
   <div id="kb-screen" class="screen">
     <div class="app-header">
       <span id="app-title-3">قاعدة المعرفة</span>
@@ -357,7 +381,7 @@
     </div>
   </div>
 
-  <!-- 4. شاشة الإحصائيات -->
+  <!-- [6] شاشة الإحصائيات -->
   <div id="stats-screen" class="screen">
     <div class="app-header">
       <span id="app-title-stats">الإحصائيات</span>
@@ -367,24 +391,21 @@
       <button class="btn-back" onclick="openScreen('home-screen')">➔ رجوع للقائمة</button>
       
       <div class="stat-box">
-        <div style="color: #64748b; font-size: 0.9rem;" id="txt-total-defects">إجمالي العيوب المسجلة</div>
+        <div style="color: #64748b; font-size: 0.85rem;" id="txt-total-defects">إجمالي العيوب المسجلة</div>
         <div class="stat-number" id="total-defects-count">0</div>
       </div>
 
       <div class="form-card">
         <h4 style="margin-top:0;" id="txt-dist-title">توزيع العيوب حسب النوع</h4>
-        <div id="stats-details" style="color: #475569; font-size: 0.95rem;"></div>
+        <div id="stats-details" style="color: #475569; font-size: 0.9rem;"></div>
       </div>
     </div>
   </div>
 
-  <!-- Footer / Copyright Section -->
+  <!-- Footer -->
   <footer>
     <p style="margin: 0;">
-      © 2026 جميع الحقوق محفوظة | تم التطوير بواسطة <strong style="color: #2563eb;"> (Mohamed Hassan Ibrahim)</strong>
-    </p>
-    <p style="margin: 4px 0 0 0; font-size: 11px; color: #94a3b8;">
-      PWA Quality Control & Defect Analysis System
+      © 2026 جميع الحقوق محفوظة | تم التطوير بواسطة <strong style="color: #2563eb;">(Mohamed Hassan Ibrahim)</strong>
     </p>
   </footer>
 
@@ -395,53 +416,13 @@
     let maintBase64Image = "";
     let lastSavedTaskData = null;
 
-    // === رابط API الخاص بجوجل شيت ودرايف ===
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPhOWUSUreQVHEKU7a3zemUHDpSJGMlu4mxQj0U3DBptM49cfHZBnPfoUW6PxGCSqe/exec";
-
-    // === إعدادات الذكاء الاصطناعي (Teachable Machine) ===
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_CODE/"; 
-    let aiModel, maxPredictions;
-
-    async function sendDefectReport(base64Data, correctLabel, aiPrediction, notes = "") {
-      try {
-        const payload = {
-          action: "save_inspection",
-          image: base64Data,
-          correctLabel: correctLabel,
-          aiPrediction: aiPrediction,
-          notes: notes
-        };
-
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        alert(currentLang === 'ar' ? 'تم رفع الصورة والتصنيف بنجاح لتدريب الذكاء الاصطناعي! 🚀' : 'Image and label uploaded successfully for AI training! 🚀');
-      } catch (error) {
-        console.error("خطأ في الإرسال:", error);
-        alert(currentLang === 'ar' ? 'حدث خطأ أثناء الإرسال، حاول مرة أخرى.' : 'Error sending data, please try again.');
-      }
-    }
-
-    async function initAIModel() {
-      try {
-        const modelURL = MODEL_URL + "model.json";
-        const metadataURL = MODEL_URL + "metadata.json";
-        aiModel = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = aiModel.getTotalClasses();
-      } catch (error) {
-        console.log("في انتظار إضافة رابط نموذج Teachable Machine الخاص بك.");
-      }
-    }
 
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       splash.style.opacity = '0';
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 1500);
+    }, 1200);
 
     function openScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -496,20 +477,7 @@
       defects.unshift(newDefect);
       localStorage.setItem('defects', JSON.stringify(defects));
 
-      const timeString = new Date().toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
-      const message = `🚨 *تقرير عيب جديد / Defect Report* 🚨\n\n` +
-                      `📌 *العنوان:* ${title}\n` +
-                      `🏷️ *التصنيف:* ${category}\n` +
-                      `📝 *الوصف:* ${desc || 'لا يوجد'}\n` +
-                      `⏰ *التاريخ:* ${timeString}\n\n` +
-                      `تم التسجيل عبر تطبيق الجودة 📊`;
-
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-
-      if (confirm(currentLang === 'ar' ? 'تم الحفظ محلياً! هل تريد إرسال التقرير لجروب الواتساب الآن؟' : 'Saved locally! Do you want to send the report to WhatsApp group now?')) {
-        window.open(whatsappUrl, '_blank');
-      }
-
+      alert(currentLang === 'ar' ? 'تم حفظ العيب في قاعدة البيانات بنجاح! 📦' : 'Defect saved successfully!');
       document.getElementById('defect-title').value = '';
       document.getElementById('defect-desc').value = '';
       document.getElementById('image-preview').style.display = 'none';
@@ -517,15 +485,15 @@
       openScreen('home-screen');
     }
 
-    // --- حفظ مهمة الصيانة وإرسالها للـ Backend و WhatsApp ---
     async function submitMaintenanceIssue() {
       const device = document.getElementById('maint-device').value;
       if (!device) {
-        alert(currentLang === 'ar' ? 'يرجى إدخال اسم المعدة أو خط الإنتاج!' : 'Please enter device or line name!');
+        alert(currentLang === 'ar' ? 'يرجى إدخال اسم المعدة أو خط الإنتاج!' : 'Please enter device name!');
         return;
       }
 
       const payload = {
+        id: Date.now(),
         action: "save_maintenance",
         device: device,
         issueType: document.getElementById('maint-issue-type').value,
@@ -535,6 +503,10 @@
         notes: document.getElementById('maint-notes').value,
         image: maintBase64Image
       };
+
+      let maintTasks = JSON.parse(localStorage.getItem('maintenance_tasks') || '[]');
+      maintTasks.unshift(payload);
+      localStorage.setItem('maintenance_tasks', JSON.stringify(maintTasks));
 
       lastSavedTaskData = payload;
 
@@ -546,20 +518,18 @@
           body: JSON.stringify(payload)
         });
 
-        alert(currentLang === 'ar' ? 'تم تسجيل بلاغ الصيانة بنجاح!' : 'Maintenance issue recorded successfully!');
+        alert(currentLang === 'ar' ? 'تم تسجيل بلاغ الصيانة بنجاح!' : 'Maintenance issue saved!');
         document.getElementById('whatsapp-maint-btn').style.display = 'block';
       } catch (err) {
         alert("خطأ أثناء الإرسال: " + err);
       }
     }
 
-    // --- إرسال التنبيه الفوري للمهندس عبر WhatsApp ---
     function sendWhatsAppNotification() {
       if (!lastSavedTaskData) return;
-
       const phone = document.getElementById('maint-phone').value.replace(/[^0-9]/g, '');
       if (!phone) {
-        alert(currentLang === 'ar' ? 'يرجى إدخال رقم واتساب المهندس (مع كود الدولة)!' : 'Please enter engineer WhatsApp number!');
+        alert(currentLang === 'ar' ? 'يرجى إدخال رقم واتساب المهندس!' : 'Please enter WhatsApp number!');
         return;
       }
 
@@ -568,38 +538,37 @@
 ⚠️ *نوع المشكلة:* ${lastSavedTaskData.issueType}
 🔴 *الأولوية:* ${lastSavedTaskData.priority}
 👤 *المسند إليه:* ${lastSavedTaskData.assignedTo || 'غير محدد'}
-📅 *الموعد النهائي:* ${lastSavedTaskData.dueDate || 'غير محدد'}
+📅 *الموعد:* ${lastSavedTaskData.dueDate || 'غير محدد'}
 📝 *ملاحظات:* ${lastSavedTaskData.notes || 'لا يوجد'}`;
 
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    function openSuggestions() {
-      const userFeedback = prompt(currentLang === 'ar' ? "اكتب اقتراحك أو ملاحظتك لتحسين التطبيق:" : "Enter your suggestion or feedback:");
-      if (userFeedback && userFeedback.trim() !== "") {
-        const myPhoneNumber = "201067988554";
-        const message = `💡 *اقتراح جديد لتطبيق الجودة*\n\n` +
-                        `📝 *الملاحظة:* ${userFeedback}\n\n` +
-                        `تم الإرسال من واجهة اقتراحات المستخدمين 📲`;
-        
-        const waUrl = `https://wa.me/${myPhoneNumber}?text=${encodeURIComponent(message)}`;
-        window.open(waUrl, '_blank');
+    function loadMaintenanceLog() {
+      openScreen('maint-log-screen');
+      const listContainer = document.getElementById('maint-log-list');
+      let maintTasks = JSON.parse(localStorage.getItem('maintenance_tasks') || '[]');
+
+      if (maintTasks.length === 0) {
+        listContainer.innerHTML = `<p style="text-align:center; color:#64748b;">${currentLang === 'ar' ? 'لا توجد بلاغات صيانة مسجلة بعد' : 'No maintenance tasks recorded'}</p>`;
+        return;
       }
+
+      listContainer.innerHTML = maintTasks.map(item => `
+        <div class="maint-item">
+          ${item.image ? `<img src="${item.image}">` : `<div style="width:65px;height:65px;background:#e0f2fe;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;">🛠️</div>`}
+          <div style="flex: 1;">
+            <div style="font-weight:bold; color:#1e293b;">${item.device}</div>
+            <div style="font-size:0.8rem; color:#0284c7;">${item.issueType} | ${item.priority}</div>
+            <div style="font-size:0.8rem; color:#64748b; margin-top:3px;">👤 ${item.assignedTo || 'غير محدد'} | 📅 ${item.dueDate || 'بدون موعد'}</div>
+            ${item.notes ? `<div style="font-size:0.8rem; color:#475569; margin-top:2px;">📝 ${item.notes}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
     }
 
-    async function trainNewDefect() {
-      const defectLabel = prompt(currentLang === 'ar' ? "ما هو التصنيف الصحيح لهذا العيب؟ (مثال: خدش سطحي):" : "What is the correct label for this defect?");
-      if (defectLabel && defectLabel.trim() !== "") {
-        const currentAiPrediction = document.getElementById('ai-defect-type').innerText;
-        
-        if (!aiBase64Image) {
-          alert(currentLang === 'ar' ? 'الرجاء التقاط صورة أولاً!' : 'Please capture an image first!');
-          return;
-        }
-
-        await sendDefectReport(aiBase64Image, defectLabel, currentAiPrediction, "إعادة تدريب من واجهة PWA");
-      }
+    function openPreventiveMaint() {
+      alert(currentLang === 'ar' ? "🗓️ جدول الصيانة الوقائية:\n\n1. فحص طلمبات الدهان (أسبوعياً)\n2. تشحيم السيور وماكينات الضغط (شهرياً)\n3.عايرة مستشعرات الفحص (كل أسبوعين)" : "Preventive Maintenance Schedule active.");
     }
 
     function loadKnowledgeBase() {
@@ -614,11 +583,11 @@
 
       listContainer.innerHTML = defects.map(item => `
         <div class="defect-item">
-          ${item.image ? `<img src="${item.image}">` : `<div style="width:70px;height:70px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;">📷</div>`}
+          ${item.image ? `<img src="${item.image}">` : `<div style="width:65px;height:65px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;">📷</div>`}
           <div>
             <div style="font-weight:bold; color:#1e293b;">${item.title}</div>
             <div style="font-size:0.8rem; color:#2563eb;">${item.category}</div>
-            <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">${item.desc || ''}</div>
+            <div style="font-size:0.8rem; color:#64748b; margin-top:3px;">${item.desc || ''}</div>
           </div>
         </div>
       `).join('');
@@ -645,33 +614,26 @@
       }
     }
 
-    async function simulateAI(input) {
+    function openSuggestions() {
+      const userFeedback = prompt(currentLang === 'ar' ? "اكتب اقتراحك للمطور (Mohamed Hassan):" : "Enter your suggestion:");
+      if (userFeedback && userFeedback.trim() !== "") {
+        window.open(`https://wa.me/201067988554?text=${encodeURIComponent('💡 اقتراح جديد:\n' + userFeedback)}`, '_blank');
+      }
+    }
+
+    function simulateAI(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = async function (e) {
-          aiBase64Image = e.target.result;
-          const imgPreview = document.getElementById('image-preview-ai');
-          imgPreview.src = aiBase64Image;
-          imgPreview.style.display = 'block';
-
+        reader.onload = function (e) {
+          document.getElementById('image-preview-ai').src = e.target.result;
+          document.getElementById('image-preview-ai').style.display = 'block';
           document.getElementById('ai-loading').style.display = 'block';
           document.getElementById('ai-result').style.display = 'none';
-          
-          setTimeout(async () => {
+
+          setTimeout(() => {
             document.getElementById('ai-loading').style.display = 'none';
             document.getElementById('ai-result').style.display = 'block';
-
-            if (aiModel) {
-              const prediction = await aiModel.predict(imgPreview);
-              prediction.sort((a, b) => b.probability - a.probability);
-              
-              document.getElementById('ai-defect-type').innerText = prediction[0].className;
-              document.getElementById('ai-defect-acc').innerText = (prediction[0].probability * 100).toFixed(1) + "%";
-            } else {
-              document.getElementById('ai-defect-type').innerText = currentLang === 'ar' ? "تشوه حافة (Rim Dent)" : "Rim Dent";
-              document.getElementById('ai-defect-acc').innerText = "94.2%";
-            }
-          }, 1500);
+          }, 1200);
         };
         reader.readAsDataURL(input.files[0]);
       }
@@ -680,94 +642,57 @@
     const translations = {
       ar: {
         dir: 'rtl', langBtn: 'EN',
-        appTitle1: 'تحليل العيوب', appTitle2: 'إضافة تحليل العيب', appTitle3: 'قاعدة المعرفة', appTitleStats: 'الإحصائيات', appTitleAi: 'اكتشاف عيب بالذكاء الاصطناعي', splashTitle: 'نظام تحليل العيوب',
+        appTitle1: 'الرئيسية', splashTitle: 'نظام الجودة والصيانة',
+        secMaintTitle: '🛠️ قسم الصيانة والمهام',
+        secDefectsTitle: '📦 قسم تحليل عيوب العلب',
+        mMaint1Title: 'تسجيل بلاغ عطل / مهمة', mMaint1Sub: 'إرسال بلاغ صيانة مباشر وإخطار المهندس',
+        mMaint2Title: 'سجل بلاغات الصيانة', mMaint2Sub: 'عرض ومتابعة كافة بلاغات الصيانة السابقة',
+        mMaint3Title: 'الصيانة الوقائية والجدولة', mMaint3Sub: 'جدول الفحص الدوري للمعدات والخطوط',
         m1Title: 'تصوير عيب جديد', m1Sub: 'إضافة عيب جديد إلى قاعدة البيانات',
-        m2Title: 'اكتشاف عيب', m2Sub: 'تصوير العيب وتحليله بالذكاء الاصطناعي',
-        m3Title: 'قاعدة المعرفة', m3Sub: 'عرض جميع العيوب والحلول',
-        m4Title: 'الإحصائيات', m4Sub: 'إحصائيات خطوط الإنتاج والعيوب',
-        m5Title: 'إرسال اقتراح أو ملاحظة', m5Sub: 'تواصل مباشر مع المطور (محمد حسن)',
-        btnBack: '➔ رجوع للقائمة', lblTitle: 'عنوان العيب / المشكلة:',
-        lblCategory: 'تصنيف العيب:', opt1: 'تشوه حافة (Rim Dent / Flange)',
-        opt2: 'خدش في الدهان (Scratch)', opt3: 'تسريب (Leakage)', opt4: 'أخرى (Other)',
-        lblPhoto: 'صورة العيب:', btnCam: 'الكاميرا', btnGallery: 'المعرض',
-        lblDesc: 'التفاصيل والوصف:', btnSave: 'حفظ وتحليل العيب',
-        aiBoxTitle: 'التقط صورة للتحليل الفوري', aiBoxDesc: 'سيقوم النظام بالتعرف على نوع العيب تلقائياً',
-        btnCaptureTxt: 'التقاط صورة الآن', aiLoading: 'جاري تحليل الصورة بالذكاء الاصطناعي...',
-        aiResultTitle: 'نتيجة التحليل:', aiExp: 'العيب المتوقع:', aiAcc: 'نسبة الدقة:',
-        trainTitle: '🧠 هل اكتشف النظام العيب بشكل خاطئ؟', btnTrain: '➕ إضافة هذه الصورة لتدريب الذكاء الاصطناعي',
-        totalDefects: 'إجمالي العيوب المسجلة', distTitle: 'توزيع العيوب حسب النوع'
+        m2Title: 'اكتشاف عيب بالذكاء الاصطناعي', m2Sub: 'تصوير العيب وتحليله فوراً بواسطة AI',
+        m3Title: 'قاعدة معرفة العيوب', m3Sub: 'عرض كافة عيوب العلب المسجلة والحلول',
+        m4Title: 'إحصائيات العيوب', m4Sub: 'إحصائيات خطوط الإنتاج ونسب العيوب',
+        m5Title: 'إرسال اقتراح أو ملاحظة', m5Sub: 'تواصل مباشر مع المطور (Mohamed Hassan)'
       },
       en: {
         dir: 'ltr', langBtn: 'عربي',
-        appTitle1: 'Defect Analysis', appTitle2: 'Add Defect Analysis', appTitle3: 'Knowledge Base', appTitleStats: 'Statistics', appTitleAi: 'AI Defect Detection', splashTitle: 'DEFECT Analysis System',
+        appTitle1: 'Dashboard', splashTitle: 'Quality & Maintenance System',
+        secMaintTitle: '🛠️ Maintenance & Tasks Section',
+        secDefectsTitle: '📦 Can Defects Analysis Section',
+        mMaint1Title: 'Record Maintenance Issue', mMaint1Sub: 'Submit task and notify engineer',
+        mMaint2Title: 'Maintenance Tasks Log', mMaint2Sub: 'View all previous maintenance logs',
+        mMaint3Title: 'Preventive Maintenance', mMaint3Sub: 'Schedule routine machine inspections',
         m1Title: 'Capture New Defect', m1Sub: 'Add new defect to database',
-        m2Title: 'Detect Defect', m2Sub: 'Analyze defect using AI',
-        m3Title: 'Knowledge Base', m3Sub: 'View all defects and solutions',
-        m4Title: 'Statistics', m4Sub: 'Production line & defect stats',
-        m5Title: 'Send Suggestion / Feedback', m5Sub: 'Direct contact with developer (Mohamed)',
-        btnBack: '➔ Back to Menu', lblTitle: 'Defect / Issue Title:',
-        lblCategory: 'Defect Category:', opt1: 'Rim Dent / Flange',
-        opt2: 'Paint Scratch', opt3: 'Leakage', opt4: 'Other',
-        lblPhoto: 'Defect Image:', btnCam: 'Camera', btnGallery: 'Gallery',
-        lblDesc: 'Details & Description:', btnSave: 'Save Defect Analysis',
-        aiBoxTitle: 'Capture Image for Instant Analysis', aiBoxDesc: 'System will automatically recognize defect type',
-        btnCaptureTxt: 'Capture Photo Now', aiLoading: 'Analyzing image with AI...',
-        aiResultTitle: 'Analysis Result:', aiExp: 'Expected Defect:', aiAcc: 'Accuracy Rate:',
-        trainTitle: '🧠 Did the system misidentify the defect?', btnTrain: '➕ Add image for AI training',
-        totalDefects: 'Total Recorded Defects', distTitle: 'Defects Distribution by Type'
+        m2Title: 'AI Defect Detection', m2Sub: 'Instant defect analysis using AI',
+        m3Title: 'Defect Knowledge Base', m3Sub: 'View recorded defects and solutions',
+        m4Title: 'Defect Statistics', m4Sub: 'Production line & defect analytics',
+        m5Title: 'Send Suggestion', m5Sub: 'Direct contact with developer (Mohamed)'
       }
     };
 
     function toggleLanguage() {
       currentLang = currentLang === 'ar' ? 'en' : 'ar';
       const t = translations[currentLang];
-      
+
       document.getElementById('html-tag').dir = t.dir;
       document.querySelectorAll('.lang-btn').forEach(b => b.innerText = t.langBtn);
-      
+
       document.getElementById('app-title-1').innerText = t.appTitle1;
-      document.getElementById('app-title-2').innerText = t.appTitle2;
-      document.getElementById('app-title-3').innerText = t.appTitle3;
-      document.getElementById('app-title-stats').innerText = t.appTitleStats;
-      document.getElementById('app-title-ai').innerText = t.appTitleAi;
       document.getElementById('splash-title').innerText = t.splashTitle;
+
+      document.getElementById('sec-maint-title').innerText = t.secMaintTitle;
+      document.getElementById('sec-defects-title').innerText = t.secDefectsTitle;
+
+      document.getElementById('m-maint1-title').innerText = t.mMaint1Title; document.getElementById('m-maint1-sub').innerText = t.mMaint1Sub;
+      document.getElementById('m-maint2-title').innerText = t.mMaint2Title; document.getElementById('m-maint2-sub').innerText = t.mMaint2Sub;
+      document.getElementById('m-maint3-title').innerText = t.mMaint3Title; document.getElementById('m-maint3-sub').innerText = t.mMaint3Sub;
 
       document.getElementById('m1-title').innerText = t.m1Title; document.getElementById('m1-sub').innerText = t.m1Sub;
       document.getElementById('m2-title').innerText = t.m2Title; document.getElementById('m2-sub').innerText = t.m2Sub;
       document.getElementById('m3-title').innerText = t.m3Title; document.getElementById('m3-sub').innerText = t.m3Sub;
       document.getElementById('m4-title').innerText = t.m4Title; document.getElementById('m4-sub').innerText = t.m4Sub;
       document.getElementById('m5-title').innerText = t.m5Title; document.getElementById('m5-sub').innerText = t.m5Sub;
-
-      document.querySelectorAll('.btn-back').forEach(b => b.innerText = t.btnBack);
-      document.getElementById('lbl-title').innerText = t.lblTitle;
-      document.getElementById('lbl-category').innerText = t.lblCategory;
-      document.getElementById('opt-1').innerText = t.opt1;
-      document.getElementById('opt-2').innerText = t.opt2;
-      document.getElementById('opt-3').innerText = t.opt3;
-      document.getElementById('opt-4').innerText = t.opt4;
-      document.getElementById('lbl-photo').innerText = t.lblPhoto;
-      document.querySelectorAll('.btn-cam-txt').forEach(e => e.innerText = t.btnCam);
-      document.querySelectorAll('.btn-gallery-txt').forEach(e => e.innerText = t.btnGallery);
-      document.getElementById('lbl-desc').innerText = t.lblDesc;
-      document.getElementById('btn-save').innerText = t.btnSave;
-
-      document.getElementById('txt-ai-box-title').innerText = t.aiBoxTitle;
-      document.getElementById('txt-ai-box-desc').innerText = t.aiBoxDesc;
-      document.getElementById('btn-capture-txt').innerText = t.btnCaptureTxt;
-      document.getElementById('txt-ai-loading').innerText = t.aiLoading;
-      document.getElementById('txt-ai-result-title').innerText = t.aiResultTitle;
-      document.getElementById('txt-ai-exp').innerText = t.aiExp;
-      document.getElementById('txt-ai-acc').innerText = t.aiAcc;
-      document.getElementById('txt-train-title').innerText = t.trainTitle;
-      document.getElementById('btn-train').innerText = t.btnTrain;
-
-      document.getElementById('txt-total-defects').innerText = t.totalDefects;
-      document.getElementById('txt-dist-title').innerText = t.distTitle;
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initAIModel();
-    });
   </script>
 </body>
 </html>
