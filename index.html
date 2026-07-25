@@ -3,42 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maintenance & Defect System v1.0</title>
-  <!-- تعديل اللون ليتوافق مع الخلفية الداكنة وإلغاء الشريط الأزرق -->
+  <title>MAINTENANCE & DEFECT SYSTEM V1.0</title>
+
+  <!-- ربط ملف الـ Manifest الخارجي بشكل مباشر وصحيح -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0E1117">
   
   <!-- Chart.js & Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-    // Service Worker & Manifest
-    if('serviceWorker' in navigator){
-      const swCode = `
-        const CACHE = 'maint-v1';
-        self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.add('/'))));
-        self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-      `;
-      const blob = new Blob([swCode], {type: 'text/javascript'});
-      navigator.serviceWorker.register(URL.createObjectURL(blob));
-    }
-
-    // تعديل الـ Manifest لتغيير لون الخلفية وإلغاء الأيقونة القديمة
-    const manifest = {
-      "name": "نظام الصيانة وتحليل العيوب",
-      "short_name": "صيانة",
-      "start_url": ".",
-      "display": "standalone",
-      "background_color": "#0E1117",
-      "theme_color": "#0E1117",
-      "lang": "ar",
-      "icons": []
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(manifestBlob);
-    document.write(`<link rel="manifest" href="${manifestURL}">`);
-   </script> 
-  
 
   <style>
     :root {
@@ -87,14 +60,12 @@
 </head>
 <body>
 
-  <!-- 1️⃣ صفحة الغلاف (Splash Screen) المصححة وبدون تكرار -->
+  <!-- 1️⃣ صفحة الغلاف (Splash Screen) -->
   <div id="splash" class="fixed inset-0 w-full h-full bg-[#0E1117] flex flex-col items-center justify-center z-50 transition-opacity duration-700">
-    <!-- كارت الصورة الرئيسي -->
     <div class="flex-1 flex items-center justify-center p-4 w-full max-w-sm">
       <img src="1000230635.png" alt="Splash Icon" class="w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl animate-pulse"/>
     </div>
     
-    <!-- العناصر السفلية (الإصدار والدائرة المتحركة) -->
     <div class="pb-10 flex flex-col items-center gap-5">
       <div class="px-5 py-1.5 bg-[#1E293B] rounded-full text-xs text-blue-400 border border-gray-700/60 font-semibold shadow-inner">
         v1.0 - 2026
@@ -113,9 +84,8 @@
     let mainChart = null;
     let statsChart = null;
 
-    // البدء التشغيلي والتحكم بالـ Splash Screen
     window.onload = () => {
-      render(); // بناء الواجهة فوراً في الخلفية
+      render();
       
       setTimeout(() => {
         const splash = document.getElementById('splash');
@@ -176,7 +146,6 @@
       render();
     };
 
-    // ===== الـ Render الرئيسي للموجه =====
     const render = () => {
       const app = document.getElementById('app');
       if (currentPage === 'home') {
@@ -208,7 +177,6 @@
       }
     };
 
-    // ===== الشاشة الرئيسية (Home View) =====
     const HomeView = () => {
       const t = translations[currentLang];
       const roleName = currentRole === 'admin' ? (currentLang==='ar'?'(مدير)':'(Admin)') : currentRole === 'engineer' ? (currentLang==='ar'?'(مهندس)':'(Engineer)') : (currentLang==='ar'?'(فني)':'(Tech)');
@@ -231,7 +199,6 @@
       </div>
 
       <div class="p-4 max-w-md mx-auto">
-        <!-- Dashboard Card -->
         <div class="dashboard-card">
           <div class="flex justify-between items-center text-xs font-bold mb-3">
             <span>${t.dashTitle}</span>
@@ -256,7 +223,6 @@
           </div>
         </div>
 
-        <!-- قسم الصيانة -->
         <div class="text-xs font-bold text-blue-400 mb-2">${t.secMaint}</div>
         <div class="grid grid-cols-2 gap-2.5 mb-4">
           ${ActionBtn('🚨', t.m1, 'report')}
@@ -266,7 +232,6 @@
           <div class="col-span-2">${ActionBtn('📱', t.m5, 'qr')}</div>
         </div>
 
-        <!-- قسم العيوب -->
         <div class="text-xs font-bold text-blue-400 mb-2">${t.secDefects}</div>
         <div class="grid grid-cols-2 gap-2.5 mb-4">
           ${ActionBtn('📷', t.d1, 'defect')}
@@ -276,7 +241,6 @@
           <div class="col-span-2">${ActionBtn('📄', t.d5, 'reports')}</div>
         </div>
 
-        <!-- قسم الإدارة (للمدير فقط) -->
         ${currentRole === 'admin' ? `
           <div class="text-xs font-bold text-blue-400 mb-2">${t.secUsers}</div>
           ${ActionBtn('⚙️', t.u1, 'users')}
@@ -298,7 +262,6 @@
       </div>
     `;
 
-    // ===== الصفحات والفرعيات (Sub-views) =====
     const PageView = (title, content) => `
       <div class="p-4 max-w-md mx-auto">
         <button onclick="navigateTo('home')" class="mb-4 bg-gray-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">⬅️ ${currentLang==='ar'?'رجوع للرئيسية':'Back Home'}</button>
@@ -314,7 +277,6 @@
       </form>
     `);
 
-    // نماذج الإدخال
     const ReportFormFields = () => `
       <div>
         <label class="block text-xs font-bold mb-1 opacity-70">المعدة / الماكينة</label>
@@ -378,7 +340,6 @@
       </div>
     `;
 
-    // ===== الرسوم البيانية Charts =====
     const initMainChart = () => {
       setTimeout(() => {
         const ctx = document.getElementById('chartMachines');
@@ -439,15 +400,17 @@
       }, 50);
     };
   </script>
+
+  <!-- تسجيل الـ Service Worker الخارجي بشكل صحيح -->
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('SW Registered!', reg))
-        .catch(err => console.log('SW Error:', err));
-    });
-  }
-</script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW Registered!', reg))
+          .catch(err => console.log('SW Error:', err));
+      });
+    }
+  </script>
 
 </body>
 </html>
