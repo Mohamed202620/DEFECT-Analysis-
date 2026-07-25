@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maintenance & Defect System v1.0</title>
   
+  <!-- PWA Manifest & Theme Color -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1E40AF">
+
   <!-- Chart.js للرسم البياني -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -20,7 +24,7 @@
     }
 
     body.dark-mode {
-      --primary: #3b82f6;
+      --primary: #60a5fa;
       --accent: #f97316;
       --gray-text: #9ca3af;
       --bg-main: #0f172a;
@@ -32,7 +36,7 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.3s, color 0.3s; }
     body { background-color: var(--bg-main); color: var(--text-color); margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* 1. صفحة الغلاف Splash Screen */
+    /* Splash Screen */
     #splash-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: linear-gradient(135deg, #1E40AF 0%, #1e3a8a 100%); color: white;
@@ -42,7 +46,7 @@
     .splash-gear { font-size: 70px; animation: spin 8s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* الهيدر */
+    /* Header */
     .app-header { 
       background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 12px 16px; 
       display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
@@ -54,7 +58,7 @@
       padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem;
     }
 
-    .container { padding: 16px; max-width: 500px; margin: auto; flex: 1; width: 100%; }
+    .container { padding: 16px; max-width: 500px; margin: auto; flex: 1; width: 100%; padding-bottom: 30px; }
 
     /* Dashboard */
     .dashboard-card {
@@ -69,7 +73,7 @@
     .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--accent); }
     .stat-lbl { font-size: 0.7rem; color: var(--gray-text); margin-top: 2px; }
 
-    /* الأقسام */
+    /* Grid Sections */
     .section-title {
       font-size: 1rem; font-weight: bold; color: var(--primary);
       margin: 20px 0 10px 0; display: flex; align-items: center; gap: 8px;
@@ -85,7 +89,22 @@
     .btn-action .icon { font-size: 22px; }
     .btn-action .text { font-size: 0.85rem; font-weight: bold; color: var(--text-color); }
 
-    /* الفوتر */
+    /* Modal / Page Dialogs */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 500; justify-content: center; align-items: flex-end;
+    }
+    .modal-content {
+      background: var(--card-bg); width: 100%; max-width: 500px; height: 85vh;
+      border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .btn-close { background: none; border: none; font-size: 20px; color: var(--text-color); cursor: pointer; }
+
+    /* Footer */
     footer {
       text-align: center; padding: 16px; margin-top: auto;
       border-top: 1px solid var(--border-color); background: var(--card-bg);
@@ -96,24 +115,23 @@
 </head>
 <body>
 
-  <!-- [صفحة 1] الغلاف (Splash Screen) -->
+  <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-gear">⚙️</div>
     <h2 style="margin: 0; font-size: 1.5rem;">نظام الصيانة وتحليل العيوب</h2>
     <p style="margin: 5px 0 15px 0; opacity: 0.8; font-size: 0.9rem;">Maintenance & Defect System</p>
     <div style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
-      v1.0 - 2026
+      v1.0 - PWA
     </div>
   </div>
 
-  <!-- [صفحة 2 & 3] الشاشة الرئيسية -->
+  <!-- App Header -->
   <div class="app-header">
     <div class="user-info">
       👋 <span id="txt-welcome">أهلاً:</span> <span id="user-name">محمد حسن</span> 
       <span style="font-weight:normal; color: var(--gray-text);" id="user-role-lbl">(مدير)</span>
     </div>
     <div class="header-controls">
-      <!-- زر تبديل الصلاحية للعرض التجريبي -->
       <select id="role-selector" class="btn-icon" onchange="changeRole(this.value)" style="padding: 4px;">
         <option value="admin">👨‍💼 مدير</option>
         <option value="engineer">👷‍♂️ مهندس</option>
@@ -126,7 +144,7 @@
 
   <div class="container">
 
-    <!-- [📊 لوحة المتابعة - Dashboard] -->
+    <!-- Dashboard -->
     <div class="dashboard-card">
       <div style="font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
         <span id="txt-dash-title">📊 لوحة المتابعة</span>
@@ -148,66 +166,65 @@
         </div>
       </div>
 
-      <!-- الرسم البياني -->
       <div style="margin-top: 10px; height: 140px;">
         <canvas id="chartMachines"></canvas>
       </div>
     </div>
 
-    <!-- [🛠️ قسم الصيانة والمهام] -->
+    <!-- Maintenance Section -->
     <div class="section-title" id="sec-maint-title">🛠️ قسم الصيانة والمهام</div>
     <div class="grid-buttons">
-      <div class="btn-action" onclick="alertAction('تسجيل بلاغ')">
+      <div class="btn-action" onclick="openModal('m1')">
         <span class="icon">🚨</span>
         <span class="text" id="btn-m1">تسجيل بلاغ</span>
       </div>
-      <div class="btn-action" onclick="alertAction('تسجيل PM')">
+      <div class="btn-action" onclick="openModal('m2')">
         <span class="icon">📝</span>
         <span class="text" id="btn-m2">تسجيل PM</span>
       </div>
-      <div class="btn-action" onclick="alertAction('سجل الصيانة')">
+      <div class="btn-action" onclick="openModal('m3')">
         <span class="icon">📋</span>
         <span class="text" id="btn-m3">سجل الصيانة</span>
       </div>
-      <div class="btn-action" onclick="alertAction('الجدولة')">
-        <span class="icon">🗓️</span>
+      <div class="btn-action" onclick="openModal('m4')">
+        <span class="icon">📅</span>
         <span class="text" id="btn-m4">الجدولة</span>
       </div>
-      <div class="btn-action" style="grid-column: span 2;" onclick="alertAction('مسح QR')">
-        <span class="icon">📱</span>
+      <div class="btn-action" style="grid-column: span 2;" onclick="openModal('m5')">
+        <span class="icon">📷</span>
         <span class="text" id="btn-m5">مسح QR الماكينات</span>
       </div>
     </div>
 
-    <!-- [📦 قسم تحليل عيوب الإنتاج] -->
+    <!-- Defects Section -->
     <div class="section-title" id="sec-defects-title">📦 قسم تحليل عيوب الإنتاج</div>
     <div class="grid-buttons">
-      <div class="btn-action" onclick="alertAction('تصوير عيب')">
-        <span class="icon">📷</span>
+      <div class="btn-action" onclick="openModal('d1')">
+        <span class="icon">📸</span>
         <span class="text" id="btn-d1">تصوير عيب</span>
       </div>
-      <div class="btn-action" onclick="alertAction('فحص AI')">
+      <div class="btn-action" onclick="openModal('d2')">
         <span class="icon">🤖</span>
         <span class="text" id="btn-d2">فحص AI</span>
       </div>
-      <div class="btn-action" onclick="alertAction('قاعدة معرفة')">
+      <div class="btn-action" onclick="openModal('d3')">
         <span class="icon">📚</span>
         <span class="text" id="btn-d3">قاعدة المعرفة</span>
       </div>
-      <div class="btn-action" onclick="alertAction('الإحصائيات')">
-        <span class="icon">📊</span>
+      <div class="btn-action" onclick="openModal('d4')">
+        <span class="icon">📈</span>
         <span class="text" id="btn-d4">الإحصائيات</span>
       </div>
-      <div class="btn-action" style="grid-column: span 2;" onclick="alertAction('التقارير')">
+      <div class="btn-action" style="grid-column: span 2;" onclick="openModal('d5')">
         <span class="icon">📄</span>
         <span class="text" id="btn-d5">تصدير التقارير</span>
       </div>
     </div>
 
-    <!-- [👥 إدارة المستخدمين] (للمدير فقط) -->
+    <!-- Admin Section -->
     <div id="admin-section">
       <div class="section-title" id="sec-users-title">👥 إدارة المستخدمين</div>
-      <div class="btn-action" style="width: 100%; margin-bottom: 15px;" onclick="alertAction('إدارة المستخدمين')">
+      <div class="btn-action" style="width: 100%; margin-bottom: 15px;" onclick="openModal('u1')">
         <span class="icon">⚙️</span>
         <span class="text" id="btn-u1">إدارة الصلاحيات والمستخدمين (للمدير فقط)</span>
       </div>
@@ -215,7 +232,19 @@
 
   </div>
 
-  <!-- [الفوتر] -->
+  <!-- Dynamic Modal Framework (يفتح تفاصيل كل زرار) -->
+  <div id="app-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" style="margin: 0; color: var(--primary);">العنوان</h3>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modal-body" style="flex: 1;">
+        <!-- يتم تحميل شاشة الأزرار هنا ديناميكياً -->
+      </div>
+    </div>
+  </div>
+
   <footer>
     <div id="txt-footer-contact">تواصل مع الدعم الفني والتطوير</div>
     <button class="logout-btn" onclick="alert('تم تسجيل الخروج')" id="btn-logout">تسجيل الخروج ➔</button>
@@ -226,20 +255,20 @@
     let currentLang = 'ar';
     let myChart = null;
 
-    // إخفاء شاشة الغلاف بعد ثانيتين
+    // Splash Screen
     setTimeout(() => {
       const splash = document.getElementById('splash-screen');
       splash.style.opacity = '0';
       setTimeout(() => splash.style.display = 'none', 500);
-    }, 2000);
+    }, 1500);
 
-    // تبديل الوضع الداكن
+    // Dark Mode
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
-      initChart(); // إعادة رسم الرسم البياني ليتناسب مع الألوان
+      initChart();
     }
 
-    // تبديل الصلاحية (للتجربة)
+    // Role Manager
     function changeRole(role) {
       const adminSec = document.getElementById('admin-section');
       const roleLbl = document.getElementById('user-role-lbl');
@@ -255,7 +284,7 @@
       }
     }
 
-    // القاموس اللغوي (عربي / English)
+    // Translations
     const translations = {
       ar: {
         dir: 'rtl', langBtn: 'EN', welcome: 'أهلاً:', today: 'اليوم',
@@ -316,7 +345,7 @@
       initChart();
     }
 
-    // بناء الرسم البياني
+    // Chart.js Setup
     function initChart() {
       const ctx = document.getElementById('chartMachines').getContext('2d');
       const isDark = document.body.classList.contains('dark-mode');
@@ -338,50 +367,48 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
           plugins: {
             legend: { display: false },
             tooltip: {
               backgroundColor: isDark ? '#334155' : '#1e293b',
-              titleColor: '#ffffff',
-              bodyColor: '#ffffff',
-              borderColor: isDark ? '#475569' : '#cbd5e1',
-              borderWidth: 1,
-              padding: 8,
-              boxPadding: 4,
-              usePointStyle: true,
               callbacks: {
-                title: function(context) {
-                  return context[0].label;
-                },
-                label: function(context) {
-                  return ` ${t.chartLabel || 'عدد الأعطال'}: ${context.raw}`;
-                }
+                title: function(ctx) { return ctx[0].label; },
+                label: function(ctx) { return ` ${t.chartLabel}: ${ctx.raw}`; }
               }
             }
           },
           scales: {
-            x: { 
-              grid: { display: false },
-              ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 } } 
-            },
-            y: { 
-              grid: { color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' },
-              ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 }, precision: 0 } 
-            }
+            x: { grid: { display: false }, ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 } } },
+            y: { grid: { color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }, ticks: { color: isDark ? '#9ca3af' : '#4B5563', font: { size: 10 }, precision: 0 } }
           }
         }
       });
     }
 
-    function alertAction(actionName) {
-      alert(currentLang === 'ar' ? `فتح شاشة: ${actionName}` : `Opening: ${actionName}`);
+    // Modal Control & View Loader
+    function openModal(id) {
+      const modal = document.getElementById('app-modal');
+      const title = document.getElementById('modal-title');
+      const body = document.getElementById('modal-body');
+
+      const btnText = document.getElementById(`btn-${id}`).innerText;
+      title.innerText = btnText;
+
+      body.innerHTML = `<div style="padding: 20px; text-align: center;">⚙️ جاري تحميل شاشة <b>${btnText}</b>...</div>`;
+      modal.style.display = 'flex';
     }
 
-    // تشغيل الرسم البياني فور التحميل
+    function closeModal() {
+      document.getElementById('app-modal').style.display = 'none';
+    }
+
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Fail', err));
+      });
+    }
+
     window.onload = () => { initChart(); };
   </script>
 </body>
