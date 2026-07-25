@@ -230,7 +230,6 @@
         <h3 id="txt-ai-box-title">التقط صورة للتحليل الفوري</h3>
         <p style="color: #64748b; font-size: 0.9rem;" id="txt-ai-box-desc">سيقوم النظام بالتعرف على نوع العيب تلقائياً</p>
         
-        <!-- عنصر إضافة معاينة الصورة الملتقطة للذكاء الاصطناعي -->
         <img id="image-preview-ai" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none;" alt="معاينة الفحص">
 
         <label class="btn-submit" style="display: inline-block; width: auto; padding: 12px 25px; margin-top: 15px; cursor: pointer;">
@@ -294,7 +293,7 @@
     </div>
   </div>
 
-  <!-- Footer / Copyright Section -->
+  <!-- Footer Section -->
   <footer>
     <p style="margin: 0;">
       © 2026 جميع الحقوق محفوظة | تم التطوير بواسطة <strong style="color: #2563eb;"> (Mohamed Hassan Ibrahim)</strong>
@@ -307,16 +306,16 @@
   <script>
     let currentLang = 'ar';
     let base64Image = "";
-    let aiBase64Image = ""; // متغير جديد لحفظ صورة فحص الذكاء الاصطناعي
+    let aiBase64Image = "";
 
-    // === رابط API الخاص بجوجل شيت ودرايف ===
+    // === رابط Web App الخاص بـ Google Apps Script ===
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPhOWUSUreQVHEKU7a3zemUHDpSJGMlu4mxQj0U3DBptM49cfHZBnPfoUW6PxGCSqe/exec";
 
-    // === إعدادات الذكاء الاصطناعي (Teachable Machine) ===
+    // === إعدادات Teachable Machine ===
     const MODEL_URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_CODE/"; 
     let aiModel, maxPredictions;
 
-    // دالة إرسال البيانات للذكاء الاصطناعي (Google Sheets & Drive)
+    // دالة الإرسال إلى Google Apps Script
     async function sendDefectReport(base64Data, correctLabel, aiPrediction, notes = "") {
       try {
         const payload = {
@@ -333,21 +332,19 @@
           body: JSON.stringify(payload)
         });
 
-        alert(currentLang === 'ar' ? 'تم رفع الصورة والتصنيف بنجاح لتدريب الذكاء الاصطناعي! 🚀' : 'Image and label uploaded successfully for AI training! 🚀');
+        alert(currentLang === 'ar' ? 'تم رفع الصورة والتصنيف بنجاح إلى المجلد والدرايف! 🚀' : 'Image and label uploaded successfully to Drive!');
       } catch (error) {
         console.error("خطأ في الإرسال:", error);
         alert(currentLang === 'ar' ? 'حدث خطأ أثناء الإرسال، حاول مرة أخرى.' : 'Error sending data, please try again.');
       }
     }
 
-    // دالة تحميل نموذج الذكاء الاصطناعي
     async function initAIModel() {
       try {
         const modelURL = MODEL_URL + "model.json";
         const metadataURL = MODEL_URL + "metadata.json";
         aiModel = await tmImage.load(modelURL, metadataURL);
         maxPredictions = aiModel.getTotalClasses();
-        console.log("تم تحميل نموذج الذكاء الاصطناعي بنجاح!");
       } catch (error) {
         console.log("في انتظار إضافة رابط نموذج Teachable Machine الخاص بك.");
       }
@@ -399,7 +396,6 @@
       defects.unshift(newDefect);
       localStorage.setItem('defects', JSON.stringify(defects));
 
-      // تجهيز تقرير الواتساب
       const timeString = new Date().toLocaleString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
       const message = `🚨 *تقرير عيب جديد / Defect Report* 🚨\n\n` +
                       `📌 *العنوان:* ${title}\n` +
@@ -424,7 +420,7 @@
     function openSuggestions() {
       const userFeedback = prompt(currentLang === 'ar' ? "اكتب اقتراحك أو ملاحظتك لتحسين التطبيق:" : "Enter your suggestion or feedback:");
       if (userFeedback && userFeedback.trim() !== "") {
-        const myPhoneNumber = "201067988554"; // رقم هاتفك المعتمد
+        const myPhoneNumber = "201067988554";
         const message = `💡 *اقتراح جديد لتطبيق الجودة*\n\n` +
                         `📝 *الملاحظة:* ${userFeedback}\n\n` +
                         `تم الإرسال من واجهة اقتراحات المستخدمين 📲`;
@@ -434,7 +430,6 @@
       }
     }
 
-    // دالة إضافة الصورة لتدريب الذكاء الاصطناعي ورفعها لـ Google Drive و Sheets
     async function trainNewDefect() {
       const defectLabel = prompt(currentLang === 'ar' ? "ما هو التصنيف الصحيح لهذا العيب؟ (مثال: خدش سطحي):" : "What is the correct label for this defect?");
       if (defectLabel && defectLabel.trim() !== "") {
@@ -445,7 +440,6 @@
           return;
         }
 
-        // إرسال البيانات فوراً لـ Apps Script
         await sendDefectReport(aiBase64Image, defectLabel, currentAiPrediction, "إعادة تدريب من واجهة PWA");
       }
     }
@@ -493,12 +487,11 @@
       }
     }
 
-    // دالة تحليل الصورة بالذكاء الاصطناعي مع معاينة الصورة
     async function simulateAI(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = async function (e) {
-          aiBase64Image = e.target.result; // حفظ الصورة
+          aiBase64Image = e.target.result;
           const imgPreview = document.getElementById('image-preview-ai');
           imgPreview.src = aiBase64Image;
           imgPreview.style.display = 'block';
@@ -517,7 +510,6 @@
               document.getElementById('ai-defect-type').innerText = prediction[0].className;
               document.getElementById('ai-defect-acc').innerText = (prediction[0].probability * 100).toFixed(1) + "%";
             } else {
-              // النتيجة الاحتياطية حتى تضع رابط نموذجك الخاص
               document.getElementById('ai-defect-type').innerText = currentLang === 'ar' ? "تشوه حافة (Rim Dent)" : "Rim Dent";
               document.getElementById('ai-defect-acc').innerText = "94.2%";
             }
@@ -615,7 +607,6 @@
       document.getElementById('txt-dist-title').innerText = t.distTitle;
     }
 
-    // تشغيل دالة التجهيز تلقائياً
     window.addEventListener('DOMContentLoaded', () => {
       initAIModel();
     });
