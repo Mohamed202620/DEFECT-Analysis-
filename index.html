@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maintenance & Defect System v1.0</title>
-  <meta name="theme-color" content="#1E40AF">
+  <!-- تعديل اللون ليتوافق مع الخلفية الداكنة وإلغاء الشريط الأزرق -->
+  <meta name="theme-color" content="#0E1117">
   
   <!-- Chart.js & Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +29,7 @@
       "start_url": ".",
       "display": "standalone",
       "background_color": "#0E1117",
-      "theme_color": "#1E40AF",
+      "theme_color": "#0E1117",
       "lang": "ar",
       "icons": [{"src": "1000230635.png", "sizes": "512x512", "type": "image/png"}]
     };
@@ -84,33 +85,21 @@
 </head>
 <body>
 
-  <!-- 1️⃣ صفحة الغلاف (Splash Screen) بالصورة الجديدة -->
-  <div   <!-- 1️⃣ صفحة الغلاف (Splash Screen) - فل فريم وبدون نصوص مكررة -->
-  <div id="splash" class="fixed inset-0 w-full h-full bg-[#0E1117] flex flex-col items-center justify-between p-8 z-50 transition-opacity duration-700">
-    
-    <!-- المساحة العلوية للتوازن -->
-    <div class="pt-6"></div>
-
-    <!-- الصورة الأساسية (فل فريم واضحة وبدون تكرار) -->
-    <!-- 1️⃣ صفحة الغلاف (Splash Screen) الشاشة الكاملة -->
-<div id="splash" class="fixed inset-0 w-full h-full bg-[#0E1117] flex flex-col items-center justify-center z-50 transition-opacity duration-700">
-  
-  <!-- كارت الصورة الرئيسي بالكامل -->
-  <div class="flex-1 flex items-center justify-center p-4 w-full max-w-sm">
-    <img src="1000230635.png" alt="Splash Icon" class="w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl animate-pulse"/>
-  </div>
-  
-  <!-- العناصر السفلية (الإصدار والدائرة المتحركة) -->
-  <div class="pb-10 flex flex-col items-center gap-5">
-    <div class="px-5 py-1.5 bg-[#1E293B] rounded-full text-xs text-blue-400 border border-gray-700/60 font-semibold shadow-inner">
-      v1.0 - 2026
+  <!-- 1️⃣ صفحة الغلاف (Splash Screen) المصححة وبدون تكرار -->
+  <div id="splash" class="fixed inset-0 w-full h-full bg-[#0E1117] flex flex-col items-center justify-center z-50 transition-opacity duration-700">
+    <!-- كارت الصورة الرئيسي -->
+    <div class="flex-1 flex items-center justify-center p-4 w-full max-w-sm">
+      <img src="1000230635.png" alt="Splash Icon" class="w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl animate-pulse"/>
     </div>
-    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    
+    <!-- العناصر السفلية (الإصدار والدائرة المتحركة) -->
+    <div class="pb-10 flex flex-col items-center gap-5">
+      <div class="px-5 py-1.5 bg-[#1E293B] rounded-full text-xs text-blue-400 border border-gray-700/60 font-semibold shadow-inner">
+        v1.0 - 2026
+      </div>
+      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
   </div>
-
-</div>
-
-
 
   <!-- حاوية التطبيق SPA -->
   <div id="app"></div>
@@ -122,17 +111,20 @@
     let mainChart = null;
     let statsChart = null;
 
-    // التحكم بالـ Splash Screen
-    setTimeout(() => {
-      const splash = document.getElementById('splash');
-      if(splash) {
-        splash.style.opacity = '0';
-        setTimeout(() => {
-          splash.style.display = 'none';
-          render(); // تشغيل الشاشة الرئيسية
-        }, 700);
-      }
-    }, 2500);
+    // البدء التشغيلي والتحكم بالـ Splash Screen
+    window.onload = () => {
+      render(); // بناء الواجهة فوراً في الخلفية
+      
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if(splash) {
+          splash.style.opacity = '0';
+          setTimeout(() => {
+            splash.style.display = 'none';
+          }, 700);
+        }
+      }, 2000);
+    };
 
     const translations = {
       ar: {
@@ -443,11 +435,6 @@
           }
         });
       }, 50);
-    };
-
-    // البدء التشغيلي عند اكتمال تحميل الصفحة
-    window.onload = () => {
-      // الـ splash يحضر الواجهة تلقائياً بعد انقضاء الوقت المحدد
     };
   </script>
 </body>
