@@ -89,6 +89,12 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaWZmS4bGeyxKGsJoZLQsWeg6ZluvthHDY0I1wyKY3G8S1jW-wRlPq8sCLsai0sdQR/exec";
 
     window.onload = () => {
+      // التحقق مما إذا كان المستخدم قد سجل دخوله مسبقاً
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        currentPage = 'home';
+      }
+
       render();
       
       setTimeout(() => {
@@ -213,10 +219,18 @@
 
       if (phone !== '' && pass !== '') {
         errorMsg.classList.add('hidden');
+        localStorage.setItem('user', JSON.stringify({ phone: phone, role: currentRole }));
         navigateTo('home');
       } else {
         errorMsg.classList.remove('hidden');
       }
+    };
+
+    // دالة تسجيل الخروج ومسح الجلسة
+    const logout = () => {
+      localStorage.removeItem('user');
+      currentRole = 'admin';
+      navigateTo('login');
     };
 
     const HomeView = () => {
@@ -291,7 +305,9 @@
 
       <footer class="text-center p-4 text-[11px] opacity-60 border-t border-gray-800 mt-6">
         <div>${t.contact}</div>
-        <button class="text-red-400 border-none bg-none cursor-pointer font-bold my-1" onclick="navigateTo('login')">${t.logout}</button>
+        <button onclick="logout()" class="w-full py-2 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg font-bold text-xs text-white transition my-2">
+          ${t.logout}
+        </button>
         <div>${t.copy}</div>
       </footer>
       `;
