@@ -83,6 +83,10 @@
     let currentRole = 'admin';
     let mainChart = null;
     let statsChart = null;
+    let defectImageData = null;
+
+    // رابط Google Apps Script Web App الخاص بك
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaWZmS4bGeyxKGsJoZLQsWeg6ZluvthHDY0I1wyKY3G8S1jW-wRlPq8sCLsai0sdQR/exec";
 
     window.onload = () => {
       render();
@@ -156,7 +160,7 @@
       } else if (currentPage === 'pm') {
         app.innerHTML = FormPage('📝 تسجيل صيانة وقائية (PM)', PMFormFields(), 'تم حفظ نموذج PM بنجاح ✅');
       } else if (currentPage === 'defect') {
-        app.innerHTML = FormPage('📸 تصوير وتسجيل عيب إنتاج', DefectFormFields(), 'تم حفظ العيب وتحليله بنجاح ✅');
+        app.innerHTML = DefectView();
       } else if (currentPage === 'log') {
         app.innerHTML = PageView('📋 سجل الصيانة والبلاغات', LogContent());
       } else if (currentPage === 'schedule') {
@@ -277,6 +281,72 @@
       </form>
     `);
 
+    // واجهة تسجيل العيوب الاحترافية الجديدة
+    const DefectView = () => `
+    <div class="p-4 max-w-md mx-auto space-y-4 text-white text-right">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('home')" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg text-xs font-bold transition">
+          ⬅️ رجوع للرئيسية
+        </button>
+        <h2 class="text-sm font-bold text-blue-400">📸 تصوير وتسجيل عيب جديد</h2>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold mb-1 text-gray-300">خط الإنتاج</label>
+        <select id="lineSelect" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500">
+          <option value="خط 1">خط 1</option>
+          <option value="خط 2">خط 2</option>
+          <option value="خط 3">خط 3</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold mb-1 text-gray-300">صورة العيب</label>
+        <div id="previewBox" class="relative w-full h-44 rounded-xl bg-[#1E293B] border-2 border-dashed border-blue-500/50 flex items-center justify-center overflow-hidden mb-2.5">
+          <img id="preview" src="" class="hidden w-full h-full object-cover"/>
+          <div id="uploadText" class="text-center text-gray-400">
+            <div class="text-3xl mb-1">🖼️</div>
+            <p class="text-xs">لم يتم اختيار صورة بعد</p>
+          </div>
+          <button id="removeImgBtn" type="button" onclick="removeSelectedImage()" class="hidden absolute top-2 left-2 bg-red-600/80 text-white text-[10px] px-2 py-1 rounded-md font-bold backdrop-blur-sm">
+            ❌ إزالة
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="document.getElementById('galleryInput').click()" class="py-2.5 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg text-xs font-bold transition">
+            🖼️ من الاستوديو
+          </button>
+          <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-lg text-xs font-bold transition">
+            📷 فتح الكاميرا
+          </button>
+        </div>
+        
+        <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handleDefectFile(event)"/>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleDefectFile(event)"/>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold mb-1 text-gray-300">اسم العيب</label>
+        <input id="defectName" type="text" placeholder="مثال: خدش، ثقب، بقعة زيت" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"/>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold mb-1 text-gray-300">مكان حدوث العيب</label>
+        <input id="defectLocation" type="text" placeholder="مثال: بعد الماكينة 3، الجانب الأيمن" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"/>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold mb-1 text-gray-300">وصف العيب والحل المقترح</label>
+        <textarea id="defectDesc" rows="3" placeholder="اوصف العيب بالتفصيل... والحل الذي تم اتخاذه" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"></textarea>
+      </div>
+
+      <button id="submitBtn" type="button" onclick="saveDefectData()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 active:scale-95 rounded-xl font-bold text-xs text-white shadow-lg transition">
+        ✅ حفظ وإرسال
+      </button>
+    </div>
+    `;
+
     const ReportFormFields = () => `
       <div>
         <label class="block text-xs font-bold mb-1 opacity-70">المعدة / الماكينة</label>
@@ -316,17 +386,6 @@
           <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" required> تنظيف الفلاتر ونظام التبريد</label>
           <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" required> التشحيم والتزييت الدوري</label>
         </div>
-      </div>
-    `;
-
-    const DefectFormFields = () => `
-      <div>
-        <label class="block text-xs font-bold mb-1 opacity-70">خط الإنتاج</label>
-        <select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white"><option>خط 1</option><option>خط 2</option></select>
-      </div>
-      <div>
-        <label class="block text-xs font-bold mb-1 opacity-70">صورة العيب</label>
-        <input type="file" accept="image/*" capture="camera" class="w-full p-2 bg-[#1E293B] border border-gray-700 rounded-lg text-xs text-white">
       </div>
     `;
 
@@ -399,6 +458,104 @@
         });
       }, 50);
     };
+
+    // ===== لوجستيات رفع الصور المدمجة والربط بـ Google Sheets =====
+    function handleDefectFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        compressImage(file, 800, 0.7, (compressedBase64) => {
+          defectImageData = compressedBase64;
+          document.getElementById('preview').src = defectImageData;
+          document.getElementById('preview').classList.remove('hidden');
+          document.getElementById('uploadText').classList.add('hidden');
+          document.getElementById('removeImgBtn').classList.remove('hidden');
+        });
+      }
+    }
+
+    // دالة ضغط الصور لتقليل الحجم قبل الإرسال
+    function compressImage(file, maxWidth, quality, callback) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL('image/jpeg', quality));
+        };
+      };
+    }
+
+    function removeSelectedImage() {
+      defectImageData = null;
+      document.getElementById('preview').src = '';
+      document.getElementById('preview').classList.add('hidden');
+      document.getElementById('uploadText').classList.remove('hidden');
+      document.getElementById('removeImgBtn').classList.add('hidden');
+      document.getElementById('galleryInput').value = '';
+      document.getElementById('cameraInput').value = '';
+    }
+
+    async function saveDefectData() {
+      const line = document.getElementById('lineSelect').value;
+      const name = document.getElementById('defectName').value.trim();
+      const location = document.getElementById('defectLocation').value.trim();
+      const description = document.getElementById('defectDesc').value.trim();
+
+      if (!defectImageData) {
+        alert('⚠️ من فضلك التقط أو اختر صورة للعيب أولاً');
+        return;
+      }
+
+      if (!name) {
+        alert('⚠️ من فضلك أدخل اسم العيب');
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'جاري الرفع لـ Google Sheets... ⏳';
+
+      const payload = {
+        line: line,
+        name: name,
+        location: location,
+        description: description,
+        image: defectImageData,
+        date: new Date().toLocaleString('ar-EG')
+      };
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // لتفادي مشاكل CORS مع Google Apps Script
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        alert('تم حفظ العيب بنجاح وإرساله إلى Google Sheets لتدريب الـ AI ✅');
+        defectImageData = null;
+        navigateTo('home');
+      } catch (error) {
+        console.error("خطأ أثناء الإرسال:", error);
+        alert('حدث خطأ أثناء الإرسال، برجاء المحاولة لاحقاً ❌');
+        submitBtn.disabled = false;
+        submitBtn.innerText = '✅ حفظ وإرسال';
+      }
+    }
   </script>
 
   <!-- تسجيل الـ Service Worker الخارجي بشكل صحيح -->
