@@ -78,7 +78,7 @@
   <div id="app"></div>
 
   <script>
-    let currentPage = 'home';
+    let currentPage = 'login'; // بدأت بصفحة الدخول افتراضياً
     let currentLang = 'ar';
     let currentRole = 'admin';
     let mainChart = null;
@@ -152,7 +152,9 @@
 
     const render = () => {
       const app = document.getElementById('app');
-      if (currentPage === 'home') {
+      if (currentPage === 'login') {
+        app.innerHTML = LoginView();
+      } else if (currentPage === 'home') {
         app.innerHTML = HomeView();
         initMainChart();
       } else if (currentPage === 'report') {
@@ -178,6 +180,42 @@
         app.innerHTML = PageView('📄 تصدير التقارير', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert(\'تم تصدير ملف Excel بنجاح!\')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs text-white">تصدير سجلات الصيانة (Excel) 📊</button></div>');
       } else if (currentPage === 'users') {
         app.innerHTML = PageView('👥 إدارة المستخدمين والصلاحيات', '<div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2"><div class="flex justify-between items-center border-b border-gray-700 pb-2"><span>محمد حسن (مدير)</span><span class="text-blue-400">Admin</span></div><div class="flex justify-between items-center"><span>أحمد علي (فني)</span><span class="text-gray-400">Technician</span></div></div>');
+      }
+    };
+
+    // واجهة تسجيل الدخول المضافة
+    const LoginView = () => `
+      <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
+          <div class="flex justify-center mb-2">
+            <img src="1000230635.png" alt="Logo" class="w-20 h-20 object-contain rounded-2xl shadow-lg"/>
+          </div>
+          <h2 class="text-xl font-bold text-center text-blue-400">تسجيل دخول النظام</h2>
+          <div>
+            <label class="block text-xs font-bold mb-1 opacity-70">رقم الموبايل</label>
+            <input id="loginPhone" type="tel" placeholder="رقم الموبايل" class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white text-sm focus:outline-none focus:border-blue-500"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 opacity-70">كلمة السر</label>
+            <input id="loginPass" type="password" placeholder="كلمة السر" class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white text-sm focus:outline-none focus:border-blue-500"/>
+          </div>
+          <button id="loginBtn" onclick="doLogin()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold text-sm text-white transition shadow-lg">دخول</button>
+          <p id="loginError" class="text-red-500 text-xs text-center hidden">بيانات الدخول غير صحيحة، يرجى التأكد وإعادة المحاولة.</p>
+        </div>
+      </div>
+    `;
+
+    // دالة تنفيذ تسجيل الدخول
+    const doLogin = () => {
+      const phone = document.getElementById('loginPhone').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      const errorMsg = document.getElementById('loginError');
+
+      if (phone !== '' && pass !== '') {
+        errorMsg.classList.add('hidden');
+        navigateTo('home');
+      } else {
+        errorMsg.classList.remove('hidden');
       }
     };
 
@@ -253,7 +291,7 @@
 
       <footer class="text-center p-4 text-[11px] opacity-60 border-t border-gray-800 mt-6">
         <div>${t.contact}</div>
-        <button class="text-red-400 border-none bg-none cursor-pointer font-bold my-1" onclick="alert('تم تسجيل الخروج')">${t.logout}</button>
+        <button class="text-red-400 border-none bg-none cursor-pointer font-bold my-1" onclick="navigateTo('login')">${t.logout}</button>
         <div>${t.copy}</div>
       </footer>
       `;
