@@ -619,11 +619,17 @@
       if (!defectImageData) { alert('⚠️ حط صورة'); return; }
       if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
 
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
       const payload = {
         action: "saveDefect",
-        user: { name: user.name || "غير محدد", phone: user.phone || "", job: user.job || "", role: currentRole },
+
+        user: {
+          name: currentUser.name || "",
+          phone: currentUser.phone || "",
+          job: currentUser.job || "",
+          role: currentUser.role || ""
+        },
         line: line, name: name, location: location, description: description,
         image: defectImageData, date: new Date().toLocaleString('ar-EG')
       };
