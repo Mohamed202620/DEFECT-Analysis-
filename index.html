@@ -85,13 +85,19 @@
     let statsChart = null;
     let defectImageData = null;
 
-    // 🟢 تم تحديث رابط Google Apps Script Web App الجديد
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvA2-UqIeAn7x_EsncIeU9jJ4dI5l3E9-W6YwS7X-j45o2B-uW_n/exec";
+    // 🟢 رابط Google Apps Script المحدث
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVT9uoIJW0w_yxzpBFqFQzw2x_I2eualJzISuIqWbqtihCynohXaasyMOMcyFvXFE/exec";
 
     window.onload = () => {
       // التحقق مما إذا كان المستخدم قد سجل دخوله مسبقاً
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          if (userObj && userObj.role) {
+            currentRole = userObj.role;
+          }
+        } catch(e) {}
         currentPage = 'home';
       }
 
@@ -189,7 +195,7 @@
       }
     };
 
-    // واجهة تسجيل الدخول المضافة
+    // واجهة تسجيل الدخول
     const LoginView = () => `
       <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -206,25 +212,54 @@
             <input id="loginPass" type="password" placeholder="كلمة السر" class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white text-sm focus:outline-none focus:border-blue-500"/>
           </div>
           <button id="loginBtn" onclick="doLogin()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold text-sm text-white transition shadow-lg">دخول</button>
-          <p id="loginError" class="text-red-500 text-xs text-center hidden">بيانات الدخول غير صحيحة، يرجى التأكد وإعادة المحاولة.</p>
         </div>
       </div>
     `;
 
-    // دالة تنفيذ تسجيل الدخول
-    const doLogin = () => {
-      const phone = document.getElementById('loginPhone').value.trim();
-      const pass = document.getElementById('loginPass').value.trim();
-      const errorMsg = document.getElementById('loginError');
+    // 🟢 دالة تسجيل الدخول المحدثة للربط مع Apps Script
+    async function doLogin() {
+      const phone = document.getElementById("loginPhone").value.trim();
+      const pass = document.getElementById("loginPass").value.trim();
+      const btn = document.getElementById("loginBtn");
 
-      if (phone !== '' && pass !== '') {
-        errorMsg.classList.add('hidden');
-        localStorage.setItem('user', JSON.stringify({ phone: phone, role: currentRole }));
-        navigateTo('home');
-      } else {
-        errorMsg.classList.remove('hidden');
+      if (!phone || !pass) {
+        alert("أدخل رقم الموبايل وكلمة السر");
+        return;
       }
-    };
+
+      btn.disabled = true;
+      btn.innerHTML = "جاري تسجيل الدخول...";
+
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "login",
+            phone: phone,
+            password: pass
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          localStorage.setItem("user", JSON.stringify(result));
+          currentRole = result.role || "tech";
+          navigateTo("home");
+        } else {
+          alert(result.message || "بيانات الدخول غير صحيحة");
+        }
+
+      } catch (e) {
+        alert("خطأ في الاتصال بالسيرفر");
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = "دخول";
+    }
 
     // دالة تسجيل الخروج ومسح الجلسة
     const logout = () => {
@@ -233,15 +268,25 @@
       navigateTo('login');
     };
 
+    // 🟢 واجهة الرئيسية المحدثة بعرض بيانات المستخدم الديناميكية
     const HomeView = () => {
       const t = translations[currentLang];
-      const roleName = currentRole === 'admin' ? (currentLang==='ar'?'(مدير)':'(Admin)') : currentRole === 'engineer' ? (currentLang==='ar'?'(مهندس)':'(Engineer)') : (currentLang==='ar'?'(فني)':'(Tech)');
 
       return `
       <div class="app-header">
         <div class="text-xs font-bold flex items-center gap-2">
           <img src="1000230635.png" class="w-6 h-6 object-contain rounded"/>
-          <span>👋 ${t.welcome} محمد حسن <span class="font-normal opacity-70">${roleName}</span></span>
+          ${(() => {
+             const user = JSON.parse(localStorage.getItem("user") || "{}");
+             return `
+             <span>
+                👋 ${t.welcome}
+                ${user.name || "مستخدم"}
+                <span class="font-normal opacity-70">
+                (${user.job || ""})
+                </span>
+             </span>`;
+          })()}
         </div>
         <div class="flex gap-1.5 items-center">
           <select class="btn-icon" onchange="changeRole(this.value)">
@@ -335,7 +380,7 @@
       </form>
     `);
 
-    // واجهة تسجيل العيوب الاحترافية الجديدة
+    // واجهة تسجيل العيوب
     const DefectView = () => `
     <div class="p-4 max-w-md mx-auto space-y-4 text-white text-right">
       <div class="flex items-center justify-between">
@@ -513,7 +558,7 @@
       }, 50);
     };
 
-    // ===== لوجستيات رفع الصور المدمجة والربط بـ Google Sheets =====
+    // ===== لوجستيات رفع الصور والربط بـ Google Sheets =====
     function handleDefectFile(e) {
       const file = e.target.files[0];
       if (file) {
@@ -527,7 +572,6 @@
       }
     }
 
-    // دالة ضغط الصور لتقليل الحجم قبل الإرسال
     function compressImage(file, maxWidth, quality, callback) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -572,9 +616,11 @@
       if (!defectImageData) { alert('⚠️ حط صورة'); return; }
       if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
 
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
       const payload = {
         action: "saveDefect",
-        user: { name: "محمد حسن", phone: "01000000", job: "فني", role: "tech" },
+        user: { name: user.name || "غير محدد", phone: user.phone || "", job: user.job || "", role: currentRole },
         line: line, name: name, location: location, description: description,
         image: defectImageData, date: new Date().toLocaleString('ar-EG')
       };
@@ -597,7 +643,7 @@
       }
     }
 
-    // تسجيل الـ Service Worker الخارجي بشكل صحيح
+    // تسجيل الـ Service Worker الخارجي
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
