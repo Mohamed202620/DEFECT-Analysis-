@@ -135,7 +135,7 @@
         secDefects: '📦 قسم تحليل عيوب الإنتاج',
         d1: 'تصوير عيب', d2: 'فحص AI', d3: 'قاعدة المعرفة', d4: 'الإحصائيات', d5: 'تصدير التقارير',
         secUsers: '👥 إدارة المستخدمين', u1: 'إدارة الصلاحيات والمستخدمين (للمدير فقط)',
-        contact: 'تواصل مع الدعم الفني والتطوير', logout: 'تسجيل الخروج ➔', copy: '© 2026 جميع الحقوق محفوظة | Mohamed Hassan',
+        logout: 'تسجيل الخروج ➔', copy: '© 2026 جميع الحقوق محفوظة | Mohamed Hassan',
         chartLabel: 'أكثر الماكينات أعطالاً'
       },
       en: {
@@ -146,7 +146,7 @@
         secDefects: '📦 Defects Analysis',
         d1: 'Capture Defect', d2: 'AI Inspect', d3: 'Knowledge Base', d4: 'Statistics', d5: 'Export Reports',
         secUsers: '👥 Users Management', u1: 'Manage Roles & Users (Admin Only)',
-        contact: 'Contact Technical Support', logout: 'Logout ➔', copy: '© 2026 All Rights Reserved | Mohamed Hussein',
+        logout: 'Logout ➔', copy: '© 2026 All Rights Reserved | Mohamed Hussein',
         chartLabel: 'Top Faulty Machines'
       }
     };
@@ -501,6 +501,24 @@
       navigateTo('login');
     };
 
+    // 🟢 دالة التواصل مع الدعم الفني والتطوير عن طريق الواتساب
+    function contactSupport() {
+      const message = 
+`السلام عليكم،
+أرغب في التواصل بخصوص نظام الصيانة وتحليل العيوب.
+
+الاسم: ${localStorage.getItem("name") || ""}
+الوظيفة: ${localStorage.getItem("job") || ""}
+`;
+
+      const phone = "201067988554";
+
+      window.open(
+        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+        "_blank"
+      );
+    }
+
     // 🟢 دالة تحميل بيانات لوحة المتابعة من سيرفر جوجل
     async function loadDashboard() {
       try {
@@ -652,8 +670,12 @@
         ` : ''}
       </div>
 
-      <footer class="text-center p-4 text-[11px] opacity-60 border-t border-gray-800 mt-6">
-        <div>${t.contact}</div>
+      <footer class="text-center p-4 text-[11px] opacity-60 border-t border-gray-800 mt-6 space-y-2">
+        <button
+          onclick="contactSupport()"
+          class="w-full py-3 bg-green-600 hover:bg-green-700 active:scale-95 rounded-xl font-bold text-xs text-white transition shadow-lg">
+          💬 تواصل مع الدعم الفني والتطوير
+        </button>
         <button onclick="logout()" class="w-full py-2 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg font-bold text-xs text-white transition my-2">
           ${t.logout}
         </button>
