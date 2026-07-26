@@ -259,7 +259,7 @@
       </div>
     `;
 
-    // واجهة إنشاء حساب جديد
+    // واجهة إنشاء حساب جديد مع الحقول المطلوبة بالـ IDs المحددة
     const RegisterView = () => `
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -280,28 +280,20 @@
           placeholder="الوظيفة"
           class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white">
 
-        <input id="regPass" type="password"
+        <input id="regPassword" type="password"
           placeholder="كلمة المرور"
-          class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white">
-
-        <input id="regPass2" type="password"
-          placeholder="تأكيد كلمة المرور"
           class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white">
 
         <button
           onclick="registerUser()"
           class="w-full py-3 bg-blue-600 rounded-xl font-bold text-white">
-
           إنشاء الحساب
-
         </button>
 
         <button
           onclick="navigateTo('login')"
           class="w-full py-3 bg-gray-700 rounded-xl text-white">
-
           رجوع
-
         </button>
 
       </div>
@@ -403,16 +395,10 @@
       const name = document.getElementById("regName").value.trim();
       const phone = document.getElementById("regPhone").value.trim();
       const job = document.getElementById("regJob").value.trim();
-      const pass = document.getElementById("regPass").value.trim();
-      const pass2 = document.getElementById("regPass2").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
 
-      if (!name || !phone || !job || !pass || !pass2) {
-        alert("برجاء استكمال جميع البيانات");
-        return;
-      }
-
-      if (pass !== pass2) {
-        alert("كلمتا المرور غير متطابقتين");
+      if (!name || !phone || !password) {
+        alert("يرجى إدخال جميع البيانات المطلوبة");
         return;
       }
 
@@ -428,7 +414,7 @@
             name: name,
             phone: phone,
             job: job,
-            password: pass
+            password: password
           })
         });
 
@@ -436,8 +422,14 @@
 
         if (result.status === "success") {
 
-          alert("✅ تم إرسال طلب التسجيل، في انتظار موافقة المدير.");
+          alert("✅ تم إنشاء الحساب بنجاح");
 
+          document.getElementById("regName").value = "";
+          document.getElementById("regPhone").value = "";
+          document.getElementById("regJob").value = "";
+          document.getElementById("regPassword").value = "";
+
+          showLogin();
           navigateTo("login");
 
         } else {
@@ -446,9 +438,11 @@
 
         }
 
-      } catch (e) {
+      } catch (err) {
 
-        alert("خطأ فى الاتصال بالسيرفر");
+        alert("خطأ في الاتصال بالسيرفر");
+
+        console.log(err);
 
       }
 
