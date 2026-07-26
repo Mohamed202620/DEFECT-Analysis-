@@ -268,25 +268,28 @@
       navigateTo('login');
     };
 
-    // 🟢 واجهة الرئيسية المحدثة بعرض بيانات المستخدم الديناميكية
+    // 🟢 واجهة الرئيسية المحدثة بعرض بيانات المستخدم الديناميكية والدور
     const HomeView = () => {
       const t = translations[currentLang];
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const roleName =
+          user.role === "admin"
+          ? (currentLang === "ar" ? "(مدير)" : "(Admin)")
+          : user.role === "engineer"
+          ? (currentLang === "ar" ? "(مهندس)" : "(Engineer)")
+          : (currentLang === "ar" ? "(فني)" : "(Technician)");
 
       return `
       <div class="app-header">
         <div class="text-xs font-bold flex items-center gap-2">
           <img src="1000230635.png" class="w-6 h-6 object-contain rounded"/>
-          ${(() => {
-             const user = JSON.parse(localStorage.getItem("user") || "{}");
-             return `
-             <span>
-                👋 ${t.welcome}
-                ${user.name || "مستخدم"}
-                <span class="font-normal opacity-70">
-                (${user.job || ""})
-                </span>
-             </span>`;
-          })()}
+          <span>
+            👋 ${t.welcome}
+            ${user.name || "مستخدم"}
+            <span class="font-normal opacity-70">
+              ${roleName}
+            </span>
+          </span>
         </div>
         <div class="flex gap-1.5 items-center">
           <select class="btn-icon" onchange="changeRole(this.value)">
