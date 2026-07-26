@@ -347,18 +347,32 @@
             <span>${t.dashTitle}</span>
             <span class="opacity-60">${t.today}</span>
           </div>
-          <div class="grid grid-cols-3 gap-2 text-center mb-3">
+          <div class="grid grid-cols-4 gap-2 text-center mb-3">
             <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
-              <div class="text-lg font-bold text-orange-500">${dashboardData.open}</div>
+              <div class="text-lg font-bold text-orange-500">
+                ${dashboardData.open}
+              </div>
               <div class="text-[10px] opacity-70">${t.openTickets}</div>
             </div>
             <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
-              <div class="text-lg font-bold text-red-500">${dashboardData.closed}</div>
+              <div class="text-lg font-bold text-red-500">
+                ${dashboardData.closed}
+              </div>
               <div class="text-[10px] opacity-70">تم الإصلاح</div>
             </div>
             <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
-              <div class="text-lg font-bold text-blue-500">${dashboardData.today}</div>
+              <div class="text-lg font-bold text-blue-500">
+                ${dashboardData.today}
+              </div>
               <div class="text-[10px] opacity-70">${t.todayDefects}</div>
+            </div>
+            <div class="bg-[#0E1117] p-2 rounded-lg border border-gray-800">
+              <div class="text-lg font-bold text-green-500">
+                ${dashboardData.total}
+              </div>
+              <div class="text-[10px] opacity-70">
+                إجمالي البلاغات
+              </div>
             </div>
           </div>
           <div style="height: 130px;">
