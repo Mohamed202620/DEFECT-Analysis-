@@ -209,7 +209,21 @@
       } else if (currentPage === 'reports') {
         app.innerHTML = PageView('📄 تصدير التقارير', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert(\'تم تصدير ملف Excel بنجاح!\')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs text-white">تصدير سجلات الصيانة (Excel) 📊</button></div>');
       } else if (currentPage === 'users') {
-        app.innerHTML = PageView('👥 إدارة المستخدمين والصلاحيات', '<div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2"><div class="flex justify-between items-center border-b border-gray-700 pb-2"><span>محمد حسن (مدير)</span><span class="text-blue-400">Admin</span></div><div class="flex justify-between items-center"><span>أحمد علي (فني)</span><span class="text-gray-400">Technician</span></div></div>');
+        app.innerHTML = PageView('👥 إدارة المستخدمين والصلاحيات', `
+          <div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+              <span>محمد حسن (مدير)</span>
+              <span class="text-blue-400">Admin</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>أحمد علي (فني)</span>
+              <span class="text-gray-400">Technician</span>
+            </div>
+          </div>
+          <button onclick="deleteUser()" class="w-full mt-3 p-3 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg text-white font-bold transition">
+            🗑 حذف مستخدم
+          </button>
+        `);
       }
     };
 
@@ -904,6 +918,33 @@
         }
       } catch (error) {
         alert('❌ خطأ: ' + error.message);
+      }
+    }
+
+    // 🔴 دالة حذف المستخدم
+    async function deleteUser() {
+      const phone = prompt("اكتب رقم موبايل المستخدم");
+
+      if (!phone) return;
+
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "deleteUser",
+            phone: phone
+          })
+        });
+
+        const result = await response.json();
+
+        alert(result.message);
+      } catch (err) {
+        alert("خطأ في الاتصال بالسيرفر");
+        console.log(err);
       }
     }
 
