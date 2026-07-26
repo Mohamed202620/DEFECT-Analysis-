@@ -84,6 +84,7 @@
     let mainChart = null;
     let statsChart = null;
     let defectImageData = null;
+    let usersList = [];
     let dashboardData = {
       total: 0,
       open: 0,
@@ -157,6 +158,10 @@
          loadDashboard();
       }
 
+      if(page === "users"){
+         loadUsers();
+      }
+
       render();
       window.scrollTo(0,0);
     };
@@ -209,21 +214,28 @@
       } else if (currentPage === 'reports') {
         app.innerHTML = PageView('📄 تصدير التقارير', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert(\'تم تصدير ملف Excel بنجاح!\')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs text-white">تصدير سجلات الصيانة (Excel) 📊</button></div>');
       } else if (currentPage === 'users') {
-        app.innerHTML = PageView('👥 إدارة المستخدمين والصلاحيات', `
-          <div class="bg-[#1E293B] p-4 rounded-xl border border-gray-800 text-xs space-y-2">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-              <span>محمد حسن (مدير)</span>
-              <span class="text-blue-400">Admin</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span>أحمد علي (فني)</span>
-              <span class="text-gray-400">Technician</span>
-            </div>
+        app.innerHTML = PageView(
+          "👥 إدارة المستخدمين والصلاحيات",
+          `
+          <div class="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden text-xs">
+            ${usersList.length > 0 ? usersList.map(user => `
+              <div class="flex justify-between items-center p-3 border-b border-gray-700/60 last:border-b-0">
+                <div>
+                  <div class="font-bold text-white">${user.name}</div>
+                  <div class="text-[11px] text-gray-400 font-mono">${user.phone}</div>
+                </div>
+                <div class="text-blue-400 font-bold">${user.role}</div>
+              </div>
+            `).join("") : `<div class="p-4 text-center text-gray-400">جاري تحميل قائمة المستخدمين...</div>`}
           </div>
-          <button onclick="deleteUser()" class="w-full mt-3 p-3 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg text-white font-bold transition">
+
+          <button
+            onclick="deleteUser()"
+            class="w-full mt-4 p-3 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg text-white font-bold transition">
             🗑 حذف مستخدم
           </button>
-        `);
+          `
+        );
       }
     };
 
@@ -513,6 +525,30 @@
         }
       } catch (e) {
         console.log(e);
+      }
+    }
+
+    // 🟢 دالة تحميل المستخدمين
+    async function loadUsers(){
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "getUsers"
+          })
+        });
+
+        const result = await response.json();
+
+        if(result.status === "success"){
+          usersList = result.users;
+          render();
+        }
+      } catch(err) {
+        console.log(err);
       }
     }
 
@@ -923,7 +959,7 @@
 
     // 🔴 دالة حذف المستخدم
     async function deleteUser() {
-      const phone = prompt("اكتب رقم موبايل المستخدم");
+      const phone = prompt("اكتب رقم موبايل المستخدم المراد حذفه");
 
       if (!phone) return;
 
@@ -942,6 +978,10 @@
         const result = await response.json();
 
         alert(result.message);
+
+        if(result.status === "success") {
+          loadUsers();
+        }
       } catch (err) {
         alert("خطأ في الاتصال بالسيرفر");
         console.log(err);
