@@ -95,13 +95,17 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyVT9uoIJW0w_yxzpBFqFQzw2x_I2eualJzISuIqWbqtihCynohXaasyMOMcyFvXFE/exec";
 
     window.onload = () => {
-      // التحقق مما إذا كان المستخدم قد سجل دخوله مسبقاً
+      // 7️⃣ عند فتح الصفحة: التحقق من وجود جلسة مسجلة
+      const phone = localStorage.getItem("phone");
       const savedUser = localStorage.getItem('user');
-      if (savedUser) {
+
+      if (phone || savedUser) {
         try {
-          const userObj = JSON.parse(savedUser);
-          if (userObj && userObj.role) {
-            currentRole = userObj.role;
+          if (savedUser) {
+            const userObj = JSON.parse(savedUser);
+            if (userObj && userObj.role) {
+              currentRole = userObj.role;
+            }
           }
         } catch(e) {}
         currentPage = 'home';
@@ -207,7 +211,7 @@
       }
     };
 
-    // واجهة تسجيل الدخول
+    // 1️⃣ + 3️⃣ واجهة تسجيل الدخول المحدثة
     const LoginView = () => `
       <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -221,14 +225,39 @@
           </div>
           <div>
             <label class="block text-xs font-bold mb-1 opacity-70">كلمة السر</label>
-            <input id="loginPass" type="password" placeholder="كلمة السر" class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white text-sm focus:outline-none focus:border-blue-500"/>
+            <div class="relative">
+              <input
+                id="loginPass"
+                type="password"
+                placeholder="كلمة السر"
+                class="w-full p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-white text-sm pr-12 focus:outline-none focus:border-blue-500"/>
+              <button
+                type="button"
+                onclick="togglePassword()"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                👁️
+              </button>
+            </div>
           </div>
           <button id="loginBtn" onclick="doLogin()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold text-sm text-white transition shadow-lg">دخول</button>
+
+          <div class="flex gap-2 mt-3">
+            <button
+              onclick="showRegister()"
+              class="flex-1 py-2 rounded-lg border border-blue-500 text-blue-400 text-xs">
+              مستخدم جديد
+            </button>
+            <button
+              onclick="showLogin()"
+              class="flex-1 py-2 rounded-lg border border-gray-600 text-gray-300 text-xs">
+              مستخدم حالي
+            </button>
+          </div>
         </div>
       </div>
     `;
 
-    // 🟢 دالة تسجيل الدخول المحدثة للربط مع Apps Script
+    // 🟢 5️⃣ + 6️⃣ + 8️⃣ + 9️⃣ دالة تسجيل الدخول المحدثة
     async function doLogin() {
       const phone = document.getElementById("loginPhone").value.trim();
       const pass = document.getElementById("loginPass").value.trim();
@@ -240,7 +269,7 @@
       }
 
       btn.disabled = true;
-      btn.innerHTML = "جاري تسجيل الدخول...";
+      btn.innerHTML = "⏳ جاري تسجيل الدخول...";
 
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -258,24 +287,93 @@
         const result = await response.json();
 
         if (result.status === "success") {
+          btn.disabled = false;
+          btn.innerHTML = "دخول";
+
+          // 6️⃣ حفظ بيانات المستخدم
+          localStorage.setItem("phone", phone);
+          localStorage.setItem("name", result.name);
+          localStorage.setItem("job", result.job);
+          localStorage.setItem("role", result.role);
           localStorage.setItem("user", JSON.stringify(result));
+
+          // 8️⃣ رسالة ترحيب
+          alert("أهلاً " + result.name);
+
           currentRole = result.role || "tech";
           navigateTo("home");
         } else {
+          btn.disabled = false;
+          btn.innerHTML = "دخول";
+
+          // 9️⃣ اهتزاز عند الخطأ
+          const card = document.querySelector("#loginScreen div");
+          if (card) {
+            card.animate(
+              [
+                {transform: "translateX(-8px)"},
+                {transform: "translateX(8px)"},
+                {transform: "translateX(-8px)"},
+                {transform: "translateX(8px)"},
+                {transform: "translateX(0px)"}
+              ],
+              {duration: 300}
+            );
+          }
+
           alert(result.message || "بيانات الدخول غير صحيحة");
         }
 
       } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = "دخول";
+
+        // 9️⃣ اهتزاز عند الخطأ بالاتصال
+        const card = document.querySelector("#loginScreen div");
+        if (card) {
+          card.animate(
+            [
+              {transform: "translateX(-8px)"},
+              {transform: "translateX(8px)"},
+              {transform: "translateX(-8px)"},
+              {transform: "translateX(8px)"},
+              {transform: "translateX(0px)"}
+            ],
+            {duration: 300}
+          );
+        }
+
         alert("خطأ في الاتصال بالسيرفر");
       }
+    }
 
-      btn.disabled = false;
-      btn.innerHTML = "دخول";
+    // 2️⃣ دالة إظهار وإخفاء كلمة السر
+    function togglePassword() {
+      const pass = document.getElementById("loginPass");
+      if (pass.type === "password") {
+        pass.type = "text";
+      } else {
+        pass.type = "password";
+      }
+    }
+
+    // 4️⃣ دوال التبديل وإنشاء حساب جديد
+    function showRegister() {
+      alert("سيتم إضافة صفحة إنشاء حساب جديد قريباً");
+    }
+
+    function showLogin() {
+      const phoneInput = document.getElementById("loginPhone");
+      if (phoneInput) phoneInput.focus();
     }
 
     // دالة تسجيل الخروج ومسح الجلسة
     const logout = () => {
       localStorage.removeItem('user');
+      localStorage.removeItem('phone');
+      localStorage.removeItem('name');
+      localStorage.removeItem('job');
+      localStorage.removeItem('role');
       currentRole = 'admin';
       navigateTo('login');
     };
@@ -311,10 +409,13 @@
     const HomeView = () => {
       const t = translations[currentLang];
       const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const savedName = localStorage.getItem("name") || user.name || "مستخدم";
+      const savedRole = localStorage.getItem("role") || user.role || "tech";
+
       const roleName =
-          user.role === "admin"
+          savedRole === "admin"
           ? (currentLang === "ar" ? "(مدير)" : "(Admin)")
-          : user.role === "engineer"
+          : savedRole === "engineer"
           ? (currentLang === "ar" ? "(مهندس)" : "(Engineer)")
           : (currentLang === "ar" ? "(فني)" : "(Technician)");
 
@@ -324,7 +425,7 @@
           <img src="1000230635.png" class="w-6 h-6 object-contain rounded"/>
           <span>
             👋 ${t.welcome}
-            ${user.name || "مستخدم"}
+            ${savedName}
             <span class="font-normal opacity-70">
               ${roleName}
             </span>
@@ -673,15 +774,19 @@
       if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
 
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const phone = localStorage.getItem("phone") || currentUser.phone || "";
+      const userName = localStorage.getItem("name") || currentUser.name || "";
+      const job = localStorage.getItem("job") || currentUser.job || "";
+      const role = localStorage.getItem("role") || currentUser.role || "";
 
       const payload = {
         action: "saveDefect",
 
         user: {
-          name: currentUser.name || "",
-          phone: currentUser.phone || "",
-          job: currentUser.job || "",
-          role: currentUser.role || ""
+          name: userName,
+          phone: phone,
+          job: job,
+          role: role
         },
         line: line, name: name, location: location, description: description,
         image: defectImageData, date: new Date().toLocaleString('ar-EG')
