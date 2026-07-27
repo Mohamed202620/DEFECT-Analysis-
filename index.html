@@ -133,7 +133,11 @@
         dir: 'rtl', langBtn: 'EN', welcome: 'أهلاً:', today: 'اليوم',
         dashTitle: '📊 لوحة المتابعة', openTickets: 'بلاغات مفتوحة', pmLate: 'PM متأخرة', todayDefects: 'عيوب اليوم',
         secMaint: '🛠️ قسم الصيانة والمهام',
-        m1: 'تسجيل بلاغ', m2: 'تسجيل PM', m3: 'سجل الصيانة', m4: 'الجدولة', m5: 'مسح QR الماكينات',
+        m1: 'تسجيل عطل / ملاحظة',
+        m2: 'تسجيل اقتراح جديد',
+        m3: 'أعمال الصيانة الوقائية',
+        m4: 'استخراج التقارير',
+        m5: 'مسح QR الماكينة',
         secDefects: '📦 قسم تحليل عيوب الإنتاج',
         d1: 'تصوير عيب', d2: 'فحص AI', d3: 'قاعدة المعرفة', d4: 'الإحصائيات', d5: 'تصدير التقارير',
         secUsers: '👥 إدارة المستخدمين', u1: 'إدارة الصلاحيات والمستخدمين (للمدير فقط)',
@@ -144,7 +148,11 @@
         dir: 'ltr', langBtn: 'عربي', welcome: 'Welcome:', today: 'Today',
         dashTitle: '📊 Dashboard Overview', openTickets: 'Open Tickets', pmLate: 'Overdue PM', todayDefects: 'Today Defects',
         secMaint: '🛠️ Maintenance & Tasks',
-        m1: 'New Ticket', m2: 'Record PM', m3: 'Maint. Log', m4: 'Schedule', m5: 'Scan Machine QR',
+        m1: 'Fault / Observation',
+        m2: 'New Suggestion',
+        m3: 'Preventive Maintenance',
+        m4: 'Reports',
+        m5: 'Scan Machine QR',
         secDefects: '📦 Defects Analysis',
         d1: 'Capture Defect', d2: 'AI Inspect', d3: 'Knowledge Base', d4: 'Statistics', d5: 'Export Reports',
         secUsers: '👥 Users Management', u1: 'Manage Roles & Users (Admin Only)',
@@ -199,6 +207,12 @@
         initMainChart();
       } else if (currentPage === 'report') {
         app.innerHTML = FormPage('🚨 تسجيل بلاغ عطل جديد', ReportFormFields(), 'تم إرسال البلاغ بنجاح #1024 ✅');
+      } else if(currentPage === 'suggestion'){
+        app.innerHTML = FormPage(
+            '💡 تسجيل اقتراح جديد',
+            SuggestionFormFields(),
+            'تم إرسال الاقتراح بنجاح ✅'
+        );
       } else if (currentPage === 'pm') {
         app.innerHTML = FormPage('📝 تسجيل صيانة وقائية (PM)', PMFormFields(), 'تم حفظ نموذج PM بنجاح ✅');
       } else if (currentPage === 'defect') {
@@ -788,13 +802,28 @@
           </div>
         </div>
 
-        <div class="text-xs font-bold text-blue-400 mb-2">${t.secMaint}</div>
+        <div class="text-xs font-bold text-blue-400 mb-2">
+            ${t.secMaint}
+        </div>
+
         <div class="grid grid-cols-2 gap-2.5 mb-4">
-          ${ActionBtn('🚨', t.m1, 'report')}
-          ${ActionBtn('📝', t.m2, 'pm')}
-          ${ActionBtn('📋', t.m3, 'log')}
-          ${ActionBtn('🗓️', t.m4, 'schedule')}
-          <div class="col-span-2">${ActionBtn('📱', t.m5, 'qr')}</div>
+
+            ${ActionBtn('📝', t.m1, 'report')}
+
+            ${ActionBtn('💡', t.m2, 'suggestion')}
+
+            <div class="col-span-2">
+                ${ActionBtn('🛠️', t.m3, 'pm')}
+            </div>
+
+            <div class="col-span-2">
+                ${ActionBtn('📊', t.m4, 'reports')}
+            </div>
+
+            <div class="col-span-2">
+                ${ActionBtn('📱', t.m5, 'qr')}
+            </div>
+
         </div>
 
         <div class="text-xs font-bold text-blue-400 mb-2">${t.secDefects}</div>
@@ -1008,6 +1037,41 @@
         </div>
       </div>
     `;
+
+    const SuggestionFormFields = () => `
+<div>
+<label class="block text-xs font-bold mb-1">
+اسم الماكينة
+</label>
+
+<select class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white">
+<option>اختر الماكينة...</option>
+<option>Bodymaker 1</option>
+<option>Bodymaker 2</option>
+<option>Necker</option>
+<option>Decorator</option>
+</select>
+</div>
+
+<div>
+<label class="block text-xs font-bold mb-1">
+عنوان الاقتراح
+</label>
+
+<input
+class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white">
+</div>
+
+<div>
+<label class="block text-xs font-bold mb-1">
+وصف الاقتراح
+</label>
+
+<textarea
+rows="5"
+class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white"></textarea>
+</div>
+`;
 
     const LogContent = () => `
       <div class="overflow-x-auto rounded-xl border border-gray-800">
