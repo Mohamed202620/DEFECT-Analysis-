@@ -44,7 +44,7 @@
     }
     .btn-icon {
       background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
+      padding: 6px 10px; border-radius: 8px; font-weight: bold; font-size: 0.8rem;
     }
     .dashboard-card {
       background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 20px;
@@ -80,7 +80,7 @@
   <script>
     let currentPage = 'login'; // بدأت بصفحة الدخول افتراضياً
     let currentLang = 'ar';
-    let currentRole = 'admin';
+    let currentRole = '';
     let mainChart = null;
     let statsChart = null;
     let defectImages = [null, null, null]; // عدد الصور المطلوبة 3 صور
@@ -100,15 +100,16 @@
       const phone = localStorage.getItem("phone");
       const savedUser = localStorage.getItem('user');
 
-      if (phone || savedUser) {
+      if(savedUser){
         try {
-          if (savedUser) {
-            const userObj = JSON.parse(savedUser);
-            if (userObj && userObj.role) {
-              currentRole = userObj.role;
-            }
+          const user = JSON.parse(savedUser);
+          if (user && user.role) {
+            currentRole = user.role;
           }
         } catch(e) {}
+      }
+
+      if (phone || savedUser) {
         currentPage = 'home';
         loadDashboard();
       }
@@ -152,6 +153,14 @@
     };
 
     const navigateTo = (page) => {
+      // الخطوة 7: منع غير المدير من فتح صفحة إدارة المستخدمين
+      if(page === "users"){
+         if(currentRole !== "admin"){
+            alert("ليس لديك صلاحية");
+            return;
+         }
+      }
+
       currentPage = page;
 
       if(page === "home"){
@@ -176,11 +185,6 @@
       document.body.classList.toggle('light-mode');
       if(currentPage === 'home') initMainChart();
       if(currentPage === 'stats') initStatsChart();
-    };
-
-    const changeRole = (role) => {
-      currentRole = role;
-      render();
     };
 
     const render = () => {
@@ -229,11 +233,13 @@
             `).join("") : `<div class="p-4 text-center text-gray-400">جاري تحميل قائمة المستخدمين...</div>`}
           </div>
 
+          ${currentRole == "admin" ? `
           <button
             onclick="deleteUser()"
             class="w-full mt-4 p-3 bg-red-600 hover:bg-red-700 active:scale-95 rounded-lg text-white font-bold transition">
             🗑 حذف مستخدم
           </button>
+          ` : ''}
           `
         );
       }
@@ -364,7 +370,8 @@
 
           alert("أهلاً " + result.name);
 
-          currentRole = result.role || "tech";
+          // الخطوة 3: التحديث بالدور المرجح من الداتا بيز
+          currentRole = result.role;
           navigateTo("home");
         } else {
           btn.disabled = false;
@@ -481,13 +488,14 @@
       if (phoneInput) phoneInput.focus();
     }
 
+    // الخطوة 5: عند تسجيل الخروج تم تعيين currentRole لـ ''
     const logout = () => {
       localStorage.removeItem('user');
       localStorage.removeItem('phone');
       localStorage.removeItem('name');
       localStorage.removeItem('job');
       localStorage.removeItem('role');
-      currentRole = 'admin';
+      currentRole = '';
       navigateTo('login');
     };
 
@@ -583,11 +591,11 @@
           </span>
         </div>
         <div class="flex gap-1.5 items-center">
-          <select class="btn-icon" onchange="changeRole(this.value)">
-            <option value="admin" ${currentRole==='admin'?'selected':''}>👨‍💼 ${currentLang==='ar'?'مدير':'Admin'}</option>
-            <option value="engineer" ${currentRole==='engineer'?'selected':''}>👷‍♂️ ${currentLang==='ar'?'مهندس':'Eng'}</option>
-            <option value="tech" ${currentRole==='tech'?'selected':''}>🔧 ${currentLang==='ar'?'فني':'Tech'}</option>
-          </select>
+          <!-- الخطوة 1: استبدال قائمة الاختيار بنص العرض الثابت -->
+          <span class="btn-icon">
+            ${savedRole==="admin"?"👨‍💼 Admin":
+            savedRole==="engineer"?"👷 Engineer":"🔧 Technician"}
+          </span>
           <button class="btn-icon" onclick="toggleLanguage()">${t.langBtn}</button>
           <button class="btn-icon" onclick="toggleDarkMode()">🌙</button>
         </div>
@@ -650,7 +658,8 @@
           <div class="col-span-2">${ActionBtn('📄', t.d5, 'reports')}</div>
         </div>
 
-        ${currentRole === 'admin' ? `
+        <!-- الخطوة 6: الاعتماد على savedRole لإظهار القسم -->
+        ${savedRole === 'admin' ? `
           <div class="text-xs font-bold text-blue-400 mb-2">${t.secUsers}</div>
           ${ActionBtn('⚙️', t.u1, 'users')}
         ` : ''}
