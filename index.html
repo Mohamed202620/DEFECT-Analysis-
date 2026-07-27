@@ -85,6 +85,7 @@
     let statsChart = null;
     let defectImages = [null, null, null]; // عدد الصور المطلوبة 3 صور
     let usersList = [];
+    let pendingUsers = [];
     let dashboardData = {
       total: 0,
       open: 0,
@@ -153,8 +154,8 @@
     };
 
     const navigateTo = (page) => {
-      // الخطوة 7: منع غير المدير من فتح صفحة إدارة المستخدمين
-      if(page === "users"){
+      // الخطوة 7: منع غير المدير من فتح صفحة إدارة المستخدمين أو طلبات التسجيل
+      if(page === "users" || page === "requests"){
          if(currentRole !== "admin"){
             alert("ليس لديك صلاحية");
             return;
@@ -217,6 +218,9 @@
         app.innerHTML = PageView('📚 قاعدة المعرفة للحلول', '<input placeholder="🔍 ابحث عن العيب أو طريقة الإصلاح..." class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs mb-3 text-white">');
       } else if (currentPage === 'reports') {
         app.innerHTML = PageView('📄 تصدير التقارير', '<div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 space-y-3"><button onclick="alert(\'تم تصدير ملف Excel بنجاح!\')" class="w-full p-3 bg-green-600 rounded-lg font-bold text-xs text-white">تصدير سجلات الصيانة (Excel) 📊</button></div>');
+      } else if (currentPage === 'requests') {
+        app.innerHTML = RequestsView();
+        loadPendingUsers();
       } else if (currentPage === 'users') {
         app.innerHTML = PageView(
           "👥 إدارة المستخدمين والصلاحيات",
@@ -330,6 +334,26 @@
     </div>
     `;
 
+    const RequestsView = () => `
+      <div class="p-4 max-w-md mx-auto">
+        <button
+          onclick="navigateTo('home')"
+          class="mb-4 bg-gray-700 text-white px-3 py-2 rounded-lg text-xs font-bold">
+          ⬅️ رجوع للرئيسية
+        </button>
+
+        <h2 class="text-lg font-bold text-blue-400 mb-4">
+          📥 طلبات التسجيل
+        </h2>
+
+        <div id="pendingContainer">
+          <div class="text-center text-gray-400 text-xs p-4 bg-[#1E293B] rounded-xl border border-gray-800">
+            جاري تحميل الطلبات...
+          </div>
+        </div>
+      </div>
+    `;
+
     async function doLogin() {
       const phone = document.getElementById("loginPhone").value.trim();
       const pass = document.getElementById("loginPass").value.trim();
@@ -358,6 +382,27 @@
 
         const result = await response.json();
 
+        if(result.status == "pending"){
+            btn.disabled = false;
+            btn.innerHTML = "دخول";
+            alert("حسابك مازال في انتظار موافقة المدير.");
+            return;
+        }
+
+        if(result.status == "disabled"){
+            btn.disabled = false;
+            btn.innerHTML = "دخول";
+            alert("تم إيقاف هذا الحساب.");
+            return;
+        }
+
+        if(result.status == "rejected"){
+            btn.disabled = false;
+            btn.innerHTML = "دخول";
+            alert("تم رفض طلب التسجيل.");
+            return;
+        }
+
         if (result.status === "success") {
           btn.disabled = false;
           btn.innerHTML = "دخول";
@@ -370,7 +415,7 @@
 
           alert("أهلاً " + result.name);
 
-          // الخطوة 3: التحديث بالدور المرجح من الداتا بيز
+          // التحديث بالدور المرجح من الداتا بيز
           currentRole = result.role;
           navigateTo("home");
         } else {
@@ -440,7 +485,8 @@
             name: name,
             phone: phone,
             job: job,
-            password: password
+            password: password,
+            status: "Pending"
           })
         });
 
@@ -448,7 +494,7 @@
 
         if (result.status === "success") {
 
-          alert("✅ تم إنشاء الحساب بنجاح");
+          alert("✅ تم إرسال طلب التسجيل.\n\nسيتم تفعيل الحساب بعد موافقة المدير.");
 
           document.getElementById("regName").value = "";
           document.getElementById("regPhone").value = "";
@@ -474,6 +520,110 @@
 
     }
 
+    async function loadPendingUsers(){
+      try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "getPendingUsers"
+          })
+        });
+
+        const result = await response.json();
+
+        if(result.status == "success"){
+          pendingUsers = result.users;
+
+          if(!pendingUsers || pendingUsers.length === 0) {
+            document.getElementById("pendingContainer").innerHTML = `
+              <div class="bg-[#1E293B] p-6 rounded-xl border border-gray-800 text-center text-xs text-gray-400">
+                ✨ لا توجد طلبات تسجيل معلقة حالياً
+              </div>`;
+            return;
+          }
+
+          let html = "";
+          pendingUsers.forEach(user => {
+            html += `
+              <div class="bg-[#1E293B] border border-gray-700/80 rounded-xl p-3 mb-3 text-xs">
+                <div class="font-bold text-white text-sm mb-1">${user.name}</div>
+                <div class="text-gray-300 mb-0.5">💼 الوظيفة: ${user.job}</div>
+                <div class="text-gray-400 font-mono">📱 ${user.phone}</div>
+
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                  <button
+                    onclick="approveUser('${user.phone}')"
+                    class="bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold p-2 rounded-lg transition text-xs">
+                    ✅ موافقة
+                  </button>
+
+                  <button
+                    onclick="rejectUser('${user.phone}')"
+                    class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold p-2 rounded-lg transition text-xs">
+                    ❌ رفض
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+
+          document.getElementById("pendingContainer").innerHTML = html;
+        } else {
+          document.getElementById("pendingContainer").innerHTML = `
+            <div class="text-center text-red-400 text-xs p-4">
+              خطأ في تحميل البيانات
+            </div>`;
+        }
+      } catch(err) {
+        console.log(err);
+        document.getElementById("pendingContainer").innerHTML = `
+          <div class="text-center text-red-400 text-xs p-4">
+            خطأ في الاتصال بالسيرفر
+          </div>`;
+      }
+    }
+
+    async function approveUser(phone){
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "approveUser",
+            phone: phone
+          })
+        });
+
+        loadPendingUsers();
+      } catch(err) {
+        alert("خطأ في الاتصال بالسيرفر");
+      }
+    }
+
+    async function rejectUser(phone){
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify({
+            action: "rejectUser",
+            phone: phone
+          })
+        });
+
+        loadPendingUsers();
+      } catch(err) {
+        alert("خطأ في الاتصال بالسيرفر");
+      }
+    }
+
     function togglePassword() {
       const pass = document.getElementById("loginPass");
       if (pass.type === "password") {
@@ -488,7 +638,6 @@
       if (phoneInput) phoneInput.focus();
     }
 
-    // الخطوة 5: عند تسجيل الخروج تم تعيين currentRole لـ ''
     const logout = () => {
       localStorage.removeItem('user');
       localStorage.removeItem('phone');
@@ -591,7 +740,6 @@
           </span>
         </div>
         <div class="flex gap-1.5 items-center">
-          <!-- الخطوة 1: استبدال قائمة الاختيار بنص العرض الثابت -->
           <span class="btn-icon">
             ${savedRole==="admin"?"👨‍💼 Admin":
             savedRole==="engineer"?"👷 Engineer":"🔧 Technician"}
@@ -658,10 +806,12 @@
           <div class="col-span-2">${ActionBtn('📄', t.d5, 'reports')}</div>
         </div>
 
-        <!-- الخطوة 6: الاعتماد على savedRole لإظهار القسم -->
         ${savedRole === 'admin' ? `
           <div class="text-xs font-bold text-blue-400 mb-2">${t.secUsers}</div>
-          ${ActionBtn('⚙️', t.u1, 'users')}
+          <div class="grid grid-cols-2 gap-2.5 mb-4">
+            ${ActionBtn('⚙️', t.u1, 'users')}
+            ${ActionBtn('📥', 'طلبات التسجيل', 'requests')}
+          </div>
         ` : ''}
       </div>
 
@@ -701,7 +851,6 @@
       </form>
     `);
 
-    // 1️⃣ واجهة تسجيل العيوب المحدثة (تصوير 3 صور + اختيار المرحلة)
     const DefectView = () => `
     <div class="p-4 max-w-md mx-auto space-y-4 text-white text-right">
 
@@ -930,7 +1079,6 @@
       }, 50);
     };
 
-    // 2️⃣ دالة التعامل مع فتح وضغط الصور للـ 3 زوايا
     function handleDefectFile(e, index) {
       const file = e.target.files[0];
       if (!file) return;
@@ -979,7 +1127,6 @@
       };
     }
 
-    // 3️⃣ دالة حفظ إرسال بيانات العيب والـ 3 صور والمرحلة
     async function saveDefectData() {
       if(defectImages.includes(null)){
         alert("يرجى رفع ثلاث صور للعيب.");
@@ -1035,7 +1182,7 @@
         const result = await response.json();
         if (result.status === 'success') {
           alert('✅ تم الحفظ بنجاح');
-          defectImages = [null, null, null]; // إعادة ضبط المصفوفة
+          defectImages = [null, null, null];
           navigateTo('home');
         } else {
           btn.disabled = false;
