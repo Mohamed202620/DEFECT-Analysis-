@@ -83,7 +83,7 @@
     let currentRole = 'admin';
     let mainChart = null;
     let statsChart = null;
-    let defectImageData = null;
+    let defectImages = [null, null, null]; // عدد الصور المطلوبة 3 صور
     let usersList = [];
     let dashboardData = {
       total: 0,
@@ -239,7 +239,6 @@
       }
     };
 
-    // 1️⃣ + 3️⃣ واجهة تسجيل الدخول المحدثة
     const LoginView = () => `
       <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -285,7 +284,6 @@
       </div>
     `;
 
-    // واجهة إنشاء حساب جديد مع الحقول المطلوبة بالـ IDs المحددة
     const RegisterView = () => `
     <div class="min-h-screen flex items-center justify-center p-4">
       <div class="w-full max-w-sm bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -326,7 +324,6 @@
     </div>
     `;
 
-    // 🟢 5️⃣ + 6️⃣ + 8️⃣ + 9️⃣ دالة تسجيل الدخول المحدثة
     async function doLogin() {
       const phone = document.getElementById("loginPhone").value.trim();
       const pass = document.getElementById("loginPass").value.trim();
@@ -359,14 +356,12 @@
           btn.disabled = false;
           btn.innerHTML = "دخول";
 
-          // 6️⃣ حفظ بيانات المستخدم
           localStorage.setItem("phone", phone);
           localStorage.setItem("name", result.name);
           localStorage.setItem("job", result.job);
           localStorage.setItem("role", result.role);
           localStorage.setItem("user", JSON.stringify(result));
 
-          // 8️⃣ رسالة ترحيب
           alert("أهلاً " + result.name);
 
           currentRole = result.role || "tech";
@@ -375,7 +370,6 @@
           btn.disabled = false;
           btn.innerHTML = "دخول";
 
-          // 9️⃣ اهتزاز عند الخطأ
           const card = document.querySelector("#loginScreen div");
           if (card) {
             card.animate(
@@ -397,7 +391,6 @@
         btn.disabled = false;
         btn.innerHTML = "دخول";
 
-        // 9️⃣ اهتزاز عند الخطأ بالاتصال
         const card = document.querySelector("#loginScreen div");
         if (card) {
           card.animate(
@@ -474,7 +467,6 @@
 
     }
 
-    // 2️⃣ دالة إظهار وإخفاء كلمة السر
     function togglePassword() {
       const pass = document.getElementById("loginPass");
       if (pass.type === "password") {
@@ -484,13 +476,11 @@
       }
     }
 
-    // 4️⃣ دوال التبديل
     function showLogin() {
       const phoneInput = document.getElementById("loginPhone");
       if (phoneInput) phoneInput.focus();
     }
 
-    // دالة تسجيل الخروج ومسح الجلسة
     const logout = () => {
       localStorage.removeItem('user');
       localStorage.removeItem('phone');
@@ -501,7 +491,6 @@
       navigateTo('login');
     };
 
-    // 🟢 دالة التواصل مع الدعم الفني والتطوير عن طريق الواتساب
     function contactSupport() {
       const message = 
 `السلام عليكم،
@@ -519,7 +508,6 @@
       );
     }
 
-    // 🟢 دالة تحميل بيانات لوحة المتابعة من سيرفر جوجل
     async function loadDashboard() {
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -546,7 +534,6 @@
       }
     }
 
-    // 🟢 دالة تحميل المستخدمين
     async function loadUsers(){
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -570,7 +557,6 @@
       }
     }
 
-    // 🟢 واجهة الرئيسية المحدثة بعرض بيانات المستخدم الديناميكية والدور وقراءات الداشبورد
     const HomeView = () => {
       const t = translations[currentLang];
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -706,69 +692,120 @@
       </form>
     `);
 
-    // واجهة تسجيل العيوب
+    // 1️⃣ واجهة تسجيل العيوب المحدثة (تصوير 3 صور + اختيار المرحلة)
     const DefectView = () => `
     <div class="p-4 max-w-md mx-auto space-y-4 text-white text-right">
-      <div class="flex items-center justify-between">
-        <button onclick="navigateTo('home')" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg text-xs font-bold transition">
-          ⬅️ رجوع للرئيسية
+
+      <div class="flex justify-between items-center">
+        <button onclick="navigateTo('home')" class="px-3 py-2 bg-gray-700 rounded-lg">
+          ⬅️ رجوع
         </button>
-        <h2 class="text-sm font-bold text-blue-400">📸 تصوير وتسجيل عيب جديد</h2>
+
+        <button onclick="toggleLanguage()" class="px-3 py-2 bg-blue-600 rounded-lg">
+          🌐 ${currentLang=="ar"?"EN":"عربي"}
+        </button>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold mb-1 text-gray-300">خط الإنتاج</label>
-        <select id="lineSelect" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500">
-          <option value="خط 1">خط 1</option>
-          <option value="خط 2">خط 2</option>
-          <option value="خط 3">خط 3</option>
-        </select>
-      </div>
+      <h2 class="text-lg font-bold text-blue-400">
+        📷 تسجيل عيب جديد
+      </h2>
 
-      <div>
-        <label class="block text-xs font-bold mb-1 text-gray-300">صورة العيب</label>
-        <div id="previewBox" class="relative w-full h-44 rounded-xl bg-[#1E293B] border-2 border-dashed border-blue-500/50 flex items-center justify-center overflow-hidden mb-2.5">
-          <img id="preview" src="" class="hidden w-full h-full object-cover"/>
-          <div id="uploadText" class="text-center text-gray-400">
-            <div class="text-3xl mb-1">🖼️</div>
-            <p class="text-xs">لم يتم اختيار صورة بعد</p>
-          </div>
-          <button id="removeImgBtn" type="button" onclick="removeSelectedImage()" class="hidden absolute top-2 left-2 bg-red-600/80 text-white text-[10px] px-2 py-1 rounded-md font-bold backdrop-blur-sm">
-            ❌ إزالة
-          </button>
-        </div>
+      <p class="text-xs text-gray-400">
+        يرجى تصوير نفس العيب من ثلاث زوايا مختلفة.
+      </p>
 
+      <!-- الصورة الأولى -->
+      <div class="bg-[#1E293B] p-3 rounded-xl">
+        <div class="font-bold mb-2">الصورة الأولى *</div>
+        <img id="imgPreview0" class="hidden w-full h-44 object-cover rounded-lg mb-2">
         <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="document.getElementById('galleryInput').click()" class="py-2.5 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg text-xs font-bold transition">
-            🖼️ من الاستوديو
+          <button onclick="document.getElementById('cam0').click()" class="bg-blue-600 p-2 rounded">
+            📷 الكاميرا
           </button>
-          <button type="button" onclick="document.getElementById('cameraInput').click()" class="py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-lg text-xs font-bold transition">
-            📷 فتح الكاميرا
+          <button onclick="document.getElementById('gal0').click()" class="bg-gray-700 p-2 rounded">
+            🖼️ الاستوديو
           </button>
         </div>
-        
-        <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handleDefectFile(event)"/>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleDefectFile(event)"/>
+        <input id="cam0" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleDefectFile(event,0)">
+        <input id="gal0" type="file" accept="image/*" class="hidden" onchange="handleDefectFile(event,0)">
       </div>
 
-      <div>
-        <label class="block text-xs font-bold mb-1 text-gray-300">اسم العيب</label>
-        <input id="defectName" type="text" placeholder="مثال: خدش، ثقب، بقعة زيت" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"/>
+      <!-- الصورة الثانية -->
+      <div class="bg-[#1E293B] p-3 rounded-xl">
+        <div class="font-bold mb-2">الصورة الثانية *</div>
+        <img id="imgPreview1" class="hidden w-full h-44 object-cover rounded-lg mb-2">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="document.getElementById('cam1').click()" class="bg-blue-600 p-2 rounded">
+            📷 الكاميرا
+          </button>
+          <button onclick="document.getElementById('gal1').click()" class="bg-gray-700 p-2 rounded">
+            🖼️ الاستوديو
+          </button>
+        </div>
+        <input id="cam1" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleDefectFile(event,1)">
+        <input id="gal1" type="file" accept="image/*" class="hidden" onchange="handleDefectFile(event,1)">
       </div>
 
-      <div>
-        <label class="block text-xs font-bold mb-1 text-gray-300">مكان حدوث العيب</label>
-        <input id="defectLocation" type="text" placeholder="مثال: بعد الماكينة 3، الجانب الأيمن" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"/>
+      <!-- الصورة الثالثة -->
+      <div class="bg-[#1E293B] p-3 rounded-xl">
+        <div class="font-bold mb-2">الصورة الثالثة *</div>
+        <img id="imgPreview2" class="hidden w-full h-44 object-cover rounded-lg mb-2">
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="document.getElementById('cam2').click()" class="bg-blue-600 p-2 rounded">
+            📷 الكاميرا
+          </button>
+          <button onclick="document.getElementById('gal2').click()" class="bg-gray-700 p-2 rounded">
+            🖼️ الاستوديو
+          </button>
+        </div>
+        <input id="cam2" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleDefectFile(event,2)">
+        <input id="gal2" type="file" accept="image/*" class="hidden" onchange="handleDefectFile(event,2)">
       </div>
 
-      <div>
-        <label class="block text-xs font-bold mb-1 text-gray-300">وصف العيب والحل المقترح</label>
-        <textarea id="defectDesc" rows="3" placeholder="اوصف العيب بالتفصيل... والحل الذي تم اتخاذه" class="w-full p-2.5 rounded-lg bg-[#1E293B] border border-gray-700 text-xs text-white focus:outline-none focus:border-blue-500"></textarea>
+      <div class="text-center text-green-400 font-bold">
+        <span id="imgCounter">تم رفع 0 من 3 صور</span>
       </div>
 
-      <button id="submitBtn" type="button" onclick="saveDefectData()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 active:scale-95 rounded-xl font-bold text-xs text-white shadow-lg transition">
+      <hr class="border-gray-700">
+
+      <label class="block text-xs font-bold text-gray-300">خط الإنتاج</label>
+      <select id="lineSelect" class="w-full p-2 rounded bg-[#1E293B] text-xs text-white border border-gray-700">
+        <option>خط 1</option>
+        <option>خط 2</option>
+      </select>
+
+      <label class="block text-xs font-bold text-gray-300">المرحلة</label>
+      <select id="stageSelect" class="w-full p-2 rounded bg-[#1E293B] text-xs text-white border border-gray-700">
+        <option>Coil handling</option>
+        <option>Baler</option>
+        <option>Cupper</option>
+        <option>Bodymaker</option>
+        <option>Trimmer</option>
+        <option>Washer</option>
+        <option>Decorator</option>
+        <option>Spray</option>
+        <option>IBO</option>
+        <option>Necker</option>
+        <option>Palletizer</option>
+        <option>Depalletizer</option>
+        <option>Front end line control</option>
+        <option>Mid line control</option>
+        <option>Back end line control</option>
+      </select>
+
+      <label class="block text-xs font-bold text-gray-300">اسم العيب</label>
+      <input id="defectName" class="w-full p-2 rounded bg-[#1E293B] text-xs text-white border border-gray-700">
+
+      <label class="block text-xs font-bold text-gray-300">مكان حدوث العيب</label>
+      <input id="defectLocation" class="w-full p-2 rounded bg-[#1E293B] text-xs text-white border border-gray-700">
+
+      <label class="block text-xs font-bold text-gray-300">وصف العيب والحل</label>
+      <textarea id="defectDesc" rows="4" class="w-full p-2 rounded bg-[#1E293B] text-xs text-white border border-gray-700"></textarea>
+
+      <button id="submitBtn" onclick="saveDefectData()" class="w-full bg-blue-600 p-3 rounded-xl font-bold text-white active:scale-95 transition">
         ✅ حفظ وإرسال
       </button>
+
     </div>
     `;
 
@@ -884,18 +921,28 @@
       }, 50);
     };
 
-    // ===== لوجستيات رفع الصور والربط بـ Google Sheets =====
-    function handleDefectFile(e) {
+    // 2️⃣ دالة التعامل مع فتح وضغط الصور للـ 3 زوايا
+    function handleDefectFile(e, index) {
       const file = e.target.files[0];
-      if (file) {
-        compressImage(file, 800, 0.7, (compressedBase64) => {
-          defectImageData = compressedBase64;
-          document.getElementById('preview').src = defectImageData;
-          document.getElementById('preview').classList.remove('hidden');
-          document.getElementById('uploadText').classList.add('hidden');
-          document.getElementById('removeImgBtn').classList.remove('hidden');
-        });
-      }
+      if (!file) return;
+
+      compressImage(file, 1000, 0.8, function(base64){
+        defectImages[index] = base64;
+
+        const img = document.getElementById("imgPreview"+index);
+        img.src = base64;
+        img.classList.remove("hidden");
+
+        const count = defectImages.filter(x=>x!==null).length;
+
+        document.getElementById("imgCounter").innerHTML =
+        "تم رفع " + count + " من 3 صور";
+
+        if(count==3){
+          document.getElementById("imgCounter").innerHTML =
+          "✅ تم رفع جميع الصور";
+        }
+      });
     }
 
     function compressImage(file, maxWidth, quality, callback) {
@@ -923,24 +970,27 @@
       };
     }
 
-    function removeSelectedImage() {
-      defectImageData = null;
-      document.getElementById('preview').src = '';
-      document.getElementById('preview').classList.add('hidden');
-      document.getElementById('uploadText').classList.remove('hidden');
-      document.getElementById('removeImgBtn').classList.add('hidden');
-      document.getElementById('galleryInput').value = '';
-      document.getElementById('cameraInput').value = '';
-    }
-
+    // 3️⃣ دالة حفظ إرسال بيانات العيب والـ 3 صور والمرحلة
     async function saveDefectData() {
-      const line = document.getElementById('lineSelect').value;
-      const name = document.getElementById('defectName').value.trim();
-      const location = document.getElementById('defectLocation').value.trim();
-      const description = document.getElementById('defectDesc').value.trim();
+      if(defectImages.includes(null)){
+        alert("يرجى رفع ثلاث صور للعيب.");
+        return;
+      }
 
-      if (!defectImageData) { alert('⚠️ حط صورة'); return; }
-      if (!name) { alert('⚠️ اكتب اسم العيب'); return; }
+      const name = document.getElementById("defectName").value.trim();
+      if (!name) {
+        alert("⚠️ يرجى إدخال اسم العيب");
+        return;
+      }
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.innerHTML = "⏳ جاري الحفظ والإرسال...";
+
+      const line = document.getElementById("lineSelect").value;
+      const stage = document.getElementById("stageSelect").value;
+      const location = document.getElementById("defectLocation").value.trim();
+      const description = document.getElementById("defectDesc").value.trim();
 
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
       const phone = localStorage.getItem("phone") || currentUser.phone || "";
@@ -950,15 +1000,21 @@
 
       const payload = {
         action: "saveDefect",
-
         user: {
           name: userName,
           phone: phone,
           job: job,
           role: role
         },
-        line: line, name: name, location: location, description: description,
-        image: defectImageData, date: new Date().toLocaleString('ar-EG')
+        line: line,
+        stage: stage,
+        name: name,
+        location: location,
+        description: description,
+        image1: defectImages[0],
+        image2: defectImages[1],
+        image3: defectImages[2],
+        date: new Date().toLocaleString('ar-EG')
       };
 
       try {
@@ -970,16 +1026,20 @@
         const result = await response.json();
         if (result.status === 'success') {
           alert('✅ تم الحفظ بنجاح');
+          defectImages = [null, null, null]; // إعادة ضبط المصفوفة
           navigateTo('home');
         } else {
+          btn.disabled = false;
+          btn.innerHTML = "✅ حفظ وإرسال";
           alert('❌ حدث خطأ أثناء الحفظ: ' + (result.message || 'خطأ غير معروف'));
         }
       } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = "✅ حفظ وإرسال";
         alert('❌ خطأ: ' + error.message);
       }
     }
 
-    // 🔴 دالة حذف المستخدم
     async function deleteUser() {
       const phone = prompt("اكتب رقم موبايل المستخدم المراد حذفه");
 
